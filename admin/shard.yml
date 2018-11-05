@@ -1,0 +1,28 @@
+name: admin
+version: 0.1.0
+
+authors:
+  - Hengle Jiang <jianghengle@gmail.com>
+
+targets:
+  admin:
+    main: src/admin.cr
+
+crystal: 0.26.1
+
+license: MIT
+
+dependencies:
+  kemal:
+    github: kemalcr/kemal
+    version: 0.24.0
+
+  crecto-admin:
+    github: Crecto/crecto-admin
+
+  pg:
+    github: will/crystal-pg
+    version: 0.15.0
+
+  micrate:
+    github: amberframework/micrate
