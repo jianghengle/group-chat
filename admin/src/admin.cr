@@ -17,6 +17,7 @@ class User < Crecto::Model
     field :role, String
     field :first_name, String
     field :last_name, String
+    field :status, String
   end
 
   def self.form_attributes
@@ -25,7 +26,22 @@ class User < Crecto::Model
      {:auth_token, "string"},
      {:role, "enum", ["superuser", "user"]},
      {:first_name, "string"},
-     {:last_name, "string"}]
+     {:last_name, "string"},
+     {:status, "enum", ["active", "inactive", "deleted"]}]
+  end
+
+  def self.can_access(user)
+    return false unless user.is_a? User
+    user.role.to_s == "superuser"
+  end
+end
+
+class Guardian < Crecto::Model
+  schema "guardians" do
+    field :parent_id, Int64
+    field :child_id, Int64
+    field :master, Bool
+    field :relation, String
   end
 
   def self.can_access(user)
@@ -47,6 +63,7 @@ end
 init_admin()
 
 admin_resource(User, Repo)
+admin_resource(Guardian, Repo)
 
 Kemal::Session.config do |config|
   config.secret = "sTHxjX3R"

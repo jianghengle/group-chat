@@ -4,16 +4,21 @@
     <div v-if="token">
       <div class="sidebar-container" v-show="showSidebar" :style="{'width': sidebarContainerWidth+'px', 'padding-left': sidePadding+'px'}">
         <div class="my-sidebar">
-          sidebar
+          <my-sidebar></my-sidebar>
         </div>
       </div>
       <div class="main-container" :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px', 'padding-right': sidePadding+'px', 'padding-left': showSidebar ? '0px' : sidePadding+'px'}">
-        <router-view></router-view>
+        <div class="main-view">
+          <router-view></router-view>
+        </div>
       </div>
     </div>
     <div v-else>
-      <sign-in></sign-in>
+      <sign-in @user-signed-in="initApp"></sign-in>
     </div>
+
+    <add-child-modal></add-child-modal>
+    <confirm-modal></confirm-modal>
   </div>
 </template>
 
@@ -21,18 +26,24 @@
 import Vue from 'vue'
 import MyHeader from './components/MyHeader'
 import SignIn from './components/SignIn'
+import MySidebar from './components/MySidebar'
+import AddChildModal from './components/modals/AddChildModal'
+import ConfirmModal from './components/modals/ConfirmModal'
 
 export default {
   name: 'App',
   components: {
     MyHeader,
-    SignIn
+    SignIn,
+    MySidebar,
+    AddChildModal,
+    ConfirmModal
   },
   data () {
     return {
       windowWidth: 0,
       maxWidth: 1500,
-      sidebarWidth: 300,
+      sidebarWidth: 280,
       showSidebar: true,
       mobileWidth: 768
     }
@@ -71,7 +82,32 @@ export default {
     },
     toggleSidebar () {
       this.showSidebar = !this.showSidebar
-    }
+    },
+    initApp () {
+      this.$nextTick(function(){
+        console.log('init', this.token)
+        this.requestChildren()
+      })
+    },
+    requestChildren () {
+      this.waiting = true
+      this.$http.get(xHTTPx + '/guardian_get_children').then(response => {
+        var resp = response.body
+        var userMap = {}
+        resp[0].forEach(function(u){
+          userMap[u.id] = u
+        })
+        var children = resp[1].map(function(c){
+          c.child = userMap[c.childId]
+          return c
+        })
+        this.$store.commit('children/setChildren', children)
+        this.waiting= false
+      }, response => {
+        this.error = 'Failed to get children!'
+        this.waiting= false
+      })
+    },
   },
   mounted () {
     this.windowWidth = window.innerWidth
@@ -80,6 +116,7 @@ export default {
     window.addEventListener('resize', this.handleResize)
     if(this.token){
       Vue.http.headers.common['Authorization'] = this.token
+      this.initApp()
     }
   },
   beforeDestroy () {
@@ -98,7 +135,7 @@ export default {
   top: 52px;
   height: 100%;
   overflow: auto;
-  background-color: #f5f7f9;
+  background-color: #f5f5f5;
 }
 
 .main-container {
@@ -108,5 +145,19 @@ export default {
   height: 100%;
   overflow: auto;
   min-width: 300px;
+}
+
+.main-view {
+  padding: 20px;
+}
+
+.my-sidebar {
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-bottom: 20px;
+}
+
+.clickable {
+  cursor: pointer;
 }
 </style>

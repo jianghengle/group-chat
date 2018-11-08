@@ -14,6 +14,8 @@ import 'vue-awesome/icons/chevron-right'
 import 'vue-awesome/icons/columns'
 import 'vue-awesome/icons/envelope'
 import 'vue-awesome/icons/key'
+import 'vue-awesome/icons/spinner'
+import 'vue-awesome/icons/plus-circle'
 import Icon from 'vue-awesome/components/Icon'
 Vue.component('v-icon', Icon)
 

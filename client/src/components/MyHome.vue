@@ -1,13 +1,18 @@
 <template>
-  <div>
-    {{msg}}
+  <div class="home-container">
+    <children-section/>
+    <hr class="hr">
   </div>
 </template>
 
 <script>
+import ChildrenSection from './children/ChildrenSection'
 
 export default {
-  name: 'my-main',
+  name: 'my-home',
+  components: {
+    ChildrenSection
+  },
   data () {
     return {
       msg: 'Hello world!'

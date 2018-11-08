@@ -6,9 +6,9 @@
 
     <div class="field">
       <p class="control has-icons-left">
-        <input class="input login-text" type="text" placeholder="Email" v-model="email" @keyup.enter="login">
+        <input class="input login-text" type="text" placeholder="User" v-model="email" @keyup.enter="login">
         <span class="icon is-small is-left">
-          <v-icon name="envelope"></v-icon>
+          <v-icon name="user"></v-icon>
         </span>
       </p>
     </div>
@@ -72,15 +72,19 @@ export default {
         var token = resp.token
         var email = resp.email
         var firstName = resp.firstName
+        var userId = resp.id
         Vue.http.headers.common['Authorization'] = token
         this.$store.commit('user/setToken', token)
         this.$store.commit('user/setEmail', email)
         this.$store.commit('user/setFirstName', firstName)
+        this.$store.commit('user/setUserId', userId)
         if (this.rememberMe) {
           localStorage.setItem('token', token)
           localStorage.setItem('email', email)
           localStorage.setItem('firstName', firstName)
+          localStorage.setItem('userId', userId)
         }
+        this.$emit('user-signed-in')
       }, response => {
         this.error = 'Failed to authorize user!'
         this.$store.commit('user/reset')

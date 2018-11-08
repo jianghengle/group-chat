@@ -34,6 +34,30 @@ module MyServer
         HttpAPI::UserController.get_auth_token(env)
       end
 
+      get "/guardian_get_children" do |env|
+        HttpAPI::GuardianController.guardian_get_children(env)
+      end
+
+      post "/guardian_add_child" do |env|
+        HttpAPI::GuardianController.guardian_add_child(env)
+      end
+
+      get "/guardian_get_child/:child_id" do |env|
+        HttpAPI::GuardianController.guardian_get_child(env)
+      end
+
+      post "/guardian_update_child/:child_id" do |env|
+        HttpAPI::GuardianController.guardian_update_child(env)
+      end
+
+      post "/guardian_delete_child/:child_id" do |env|
+        HttpAPI::GuardianController.guardian_delete_child(env)
+      end
+
+      post "/guardian_remove_guardian/:guardian_id" do |env|
+        HttpAPI::GuardianController.guardian_remove_guardian(env)
+      end
+
       Kemal.run
     end
   end
