@@ -2,19 +2,19 @@
   <div>
     <aside class="menu">
       <ul class="menu-list">
-        <li><router-link :to="'/'" :class="{'is-active': routePath=='/'}">HOME</router-link></li>
+        <li><a :class="{'is-active': routePath=='/'}" @click="switchRoute('/')">HOME</a></li>
         <li>
           <div>
-            <router-link :to="'/children'" :class="{'is-active': routePath=='/children'}">
+            <a :class="{'is-active': routePath=='/children'}" @click="switchRoute('/children')">
               <span class="icon is-small plus-button" @click="openAddChildModal">
                 <v-icon name="plus-circle"/>
               </span>
               <span>MY CHILDREN</span>
-           </router-link>
+           </a>
           </div>
           <ul>
             <li v-for="c in children" :key="'nav-child-'+c.childId">
-              <router-link :to="'/children/' + c.childId" :class="{'is-active': routePath=='/children/' + c.childId}">{{c.child.firstName}}</router-link>
+              <a :class="{'is-active': routePath=='/children/' + c.childId}" @click="switchRoute('/children/' + c.childId)">{{c.child.firstName}}</a>
             </li>
           </ul>
         </li>
@@ -42,16 +42,24 @@ export default {
     routePath () {
       return this.$route.path
     },
+    isMobile () {
+      return this.$store.state.ui.isMobile
+    },
   },
   methods: {
     openAddChildModal (event) {
       event.preventDefault()
       event.stopPropagation()
       this.$store.commit('modals/openAddChildModal')
+    },
+    switchRoute (route) {
+      if(this.isMobile){
+        this.$store.commit('ui/setShowSidebar', false)
+      }
+      if(this.routePath != route){
+        this.$router.push(route)
+      }
     }
-  },
-  mounted () {
-    
   }
 }
 </script>

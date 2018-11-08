@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <my-header :show-sidebar="showSidebar" @toggle-sidebar="toggleSidebar"></my-header>
+    <my-header></my-header>
     <div v-if="token">
       <div class="sidebar-container" v-show="showSidebar" :style="{'width': sidebarContainerWidth+'px', 'padding-left': sidePadding+'px'}">
         <div class="my-sidebar">
@@ -44,13 +44,15 @@ export default {
       windowWidth: 0,
       maxWidth: 1500,
       sidebarWidth: 280,
-      showSidebar: true,
       mobileWidth: 768
     }
   },
   computed: {
     token () {
       return this.$store.state.user.token
+    },
+    showSidebar () {
+      return this.$store.state.ui.showSidebar
     },
     isMobile () {
       return this.windowWidth < this.mobileWidth
@@ -76,12 +78,20 @@ export default {
       return this.windowWidth
     }
   },
+  watch: {
+    isMobile: function (val) {
+      this.$store.commit('ui/setIsMobile', val)
+    },
+    mainContainerLeft: function (val) {
+      this.$store.commit('ui/setMainContainerLeft', val)
+    },
+    mainContainerWidth: function (val) {
+      this.$store.commit('ui/setMainContainerWidth', val)
+    }
+  },
   methods: {
     handleResize () {
       this.windowWidth = window.innerWidth
-    },
-    toggleSidebar () {
-      this.showSidebar = !this.showSidebar
     },
     initApp () {
       this.$nextTick(function(){
@@ -111,8 +121,14 @@ export default {
   },
   mounted () {
     this.windowWidth = window.innerWidth
-    if(this.windowWidth < this.mobileWidth)
-      this.showSidebar = false
+    if(this.windowWidth < this.mobileWidth){
+      this.$store.commit('ui/setShowSidebar', false)
+    }
+    this.$nextTick(function(){
+      this.$store.commit('ui/setIsMobile', this.isMobile)
+      this.$store.commit('ui/setMainContainerWidth', this.mainContainerWidth)
+      this.$store.commit('ui/setMainContainerLeft', this.mainContainerLeft)
+    })
     window.addEventListener('resize', this.handleResize)
     if(this.token){
       Vue.http.headers.common['Authorization'] = this.token

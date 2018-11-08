@@ -16,6 +16,7 @@ import 'vue-awesome/icons/envelope'
 import 'vue-awesome/icons/key'
 import 'vue-awesome/icons/spinner'
 import 'vue-awesome/icons/plus-circle'
+import 'vue-awesome/icons/angle-down'
 import Icon from 'vue-awesome/components/Icon'
 Vue.component('v-icon', Icon)
 

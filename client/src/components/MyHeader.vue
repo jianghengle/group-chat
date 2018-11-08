@@ -45,7 +45,6 @@ import Vue from 'vue'
 
 export default {
   name: 'my-header',
-  props: ['showSidebar'],
   data () {
     return {
       menuActive: false
@@ -57,13 +56,14 @@ export default {
     },
     firstName () {
       return this.$store.state.user.firstName
-    }
+    },
+    showSidebar () {
+      return this.$store.state.ui.showSidebar
+    },
   },
   methods: {
     toggleSidebar () {
-      if(this.token){
-        this.$emit('toggle-sidebar')
-      } 
+      this.$store.commit('ui/toggleSidebar')
     },
     signOut () {
       delete Vue.http.headers.common['Authorization']
