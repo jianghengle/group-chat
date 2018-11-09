@@ -16,7 +16,8 @@
         <button class="delete" @click="error=''"></button>
         {{error}}
       </div>
-      <div class="columns is-multiline">
+      <div v-if="!children.length">You have not setup or be involved by any child yet.</div>
+      <div v-else class="columns is-multiline">
         <div v-for="c in children" class="column is-half">
           <div class="box clickable" @click="viewChild(c.childId)">
             <article class="media">
@@ -28,7 +29,8 @@
               <div class="media-content">
                 <div class="content">
                   <p>
-                    <strong>{{c.child.firstName + ' ' + c.child.lastName}}</strong><br /><small>{{c.relation}}</small>
+                    <strong>{{c.child.firstName + ' ' + c.child.lastName}}</strong><br />
+                    <small>{{c.relation}}</small>
                   </p>
                 </div>
               </div>

@@ -50,6 +50,40 @@ class Guardian < Crecto::Model
   end
 end
 
+class Group < Crecto::Model
+  schema "groups" do
+    field :name, String
+    field :category, String
+    field :description, String
+    field :capacity, Int64
+    field :access, String
+    field :enroll, String
+    field :owner_id, Int64
+    field :timestamp, Int64
+  end
+
+  def self.can_access(user)
+    return false unless user.is_a? User
+    user.role.to_s == "superuser"
+  end
+end
+
+class Membership < Crecto::Model
+  schema "memberships" do
+    field :user_id, Int64
+    field :group_id, Int64
+    field :conversation, Bool
+    field :role, String
+    field :status, String
+    field :timestamp, Int64
+  end
+
+  def self.can_access(user)
+    return false unless user.is_a? User
+    user.role.to_s == "superuser"
+  end
+end
+
 CrectoAdmin.config do |config|
   config.auth_enabled = true
   config.auth = CrectoAdmin::DatabaseAuth
@@ -64,6 +98,8 @@ init_admin()
 
 admin_resource(User, Repo)
 admin_resource(Guardian, Repo)
+admin_resource(Group, Repo)
+admin_resource(Membership, Repo)
 
 Kemal::Session.config do |config|
   config.secret = "sTHxjX3R"

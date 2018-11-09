@@ -19,6 +19,7 @@
 
     <add-child-modal></add-child-modal>
     <confirm-modal></confirm-modal>
+    <add-group-modal></add-group-modal>
   </div>
 </template>
 
@@ -29,6 +30,7 @@ import SignIn from './components/SignIn'
 import MySidebar from './components/MySidebar'
 import AddChildModal from './components/modals/AddChildModal'
 import ConfirmModal from './components/modals/ConfirmModal'
+import AddGroupModal from './components/modals/AddGroupModal'
 
 export default {
   name: 'App',
@@ -37,7 +39,8 @@ export default {
     SignIn,
     MySidebar,
     AddChildModal,
-    ConfirmModal
+    ConfirmModal,
+    AddGroupModal
   },
   data () {
     return {
@@ -76,6 +79,11 @@ export default {
         return this.windowWidth - this.sidebarContainerWidth
       }
       return this.windowWidth
+    },
+    mainContainerInnerWidth () {
+      var paddingRight = this.sidePadding
+      var paddingLeft = this.showSidebar ? 0 : this.sidePadding
+      return this.mainContainerWidth - paddingRight - paddingLeft
     }
   },
   watch: {
@@ -85,8 +93,8 @@ export default {
     mainContainerLeft: function (val) {
       this.$store.commit('ui/setMainContainerLeft', val)
     },
-    mainContainerWidth: function (val) {
-      this.$store.commit('ui/setMainContainerWidth', val)
+    mainContainerInnerWidth: function (val) {
+      this.$store.commit('ui/setMainContainerInnerWidth', val)
     }
   },
   methods: {
@@ -95,12 +103,11 @@ export default {
     },
     initApp () {
       this.$nextTick(function(){
-        console.log('init', this.token)
         this.requestChildren()
+        this.requestGroups()
       })
     },
     requestChildren () {
-      this.waiting = true
       this.$http.get(xHTTPx + '/guardian_get_children').then(response => {
         var resp = response.body
         var userMap = {}
@@ -112,12 +119,34 @@ export default {
           return c
         })
         this.$store.commit('children/setChildren', children)
-        this.waiting= false
       }, response => {
         this.error = 'Failed to get children!'
-        this.waiting= false
       })
     },
+    requestGroups () {
+      this.$http.get(xHTTPx + '/get_groups').then(response => {
+        var resp = response.body
+        console.log(resp)
+        var userMap = {}
+        resp[2].forEach(function(u){
+          userMap[u.id] = u
+        })
+        var groups = {}
+        resp[0].forEach(function(g){
+          g.owner = userMap[g.ownerId]
+          g.involved = []
+          groups[g.id] = g
+        })
+        resp[1].forEach(function(m){
+          var g = groups[m.groupId]
+          m.user = userMap[m.userId]
+          g.involved.push(m)
+        })
+        this.$store.commit('groups/setGroups', groups)
+      }, response => {
+        this.error = 'Failed to get groups!'
+      })
+    }
   },
   mounted () {
     this.windowWidth = window.innerWidth
@@ -126,7 +155,7 @@ export default {
     }
     this.$nextTick(function(){
       this.$store.commit('ui/setIsMobile', this.isMobile)
-      this.$store.commit('ui/setMainContainerWidth', this.mainContainerWidth)
+      this.$store.commit('ui/setMainContainerInnerWidth', this.mainContainerWidth)
       this.$store.commit('ui/setMainContainerLeft', this.mainContainerLeft)
     })
     window.addEventListener('resize', this.handleResize)

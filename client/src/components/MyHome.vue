@@ -2,16 +2,20 @@
   <div class="home-container">
     <children-section/>
     <hr class="hr">
+    <groups-section/>
+    <hr class="hr">
   </div>
 </template>
 
 <script>
 import ChildrenSection from './children/ChildrenSection'
+import GroupsSection from './groups/GroupsSection'
 
 export default {
   name: 'my-home',
   components: {
-    ChildrenSection
+    ChildrenSection,
+    GroupsSection
   },
   data () {
     return {

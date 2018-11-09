@@ -3,7 +3,7 @@ export const state = {
   showSidebar: true,
   isMobile: false,
   mainContainerLeft: 0,
-  mainContainerWidth: 0
+  mainContainerInnerWidth: 0
 }
 
 // mutations
@@ -20,13 +20,13 @@ export const mutations = {
     state.isMobile = isMobile
   },
 
-  setMainContainerWidth (state, mainContainerWidth) {
-    state.mainContainerWidth = mainContainerWidth
+  setMainContainerInnerWidth (state, mainContainerInnerWidth) {
+    state.mainContainerInnerWidth = mainContainerInnerWidth
   },
 
   setMainContainerLeft (state, mainContainerLeft) {
     state.mainContainerLeft = mainContainerLeft
-  }
+  },
 }
 
 export default {

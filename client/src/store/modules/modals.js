@@ -7,7 +7,8 @@ export const state = {
     message: '',
     button: '',
     callback: null
-  }
+  },
+  addGroupModal: {opened: false},
 }
 
 // mutations
@@ -35,7 +36,15 @@ export const mutations = {
     state.confirmModal.message = ''
     state.confirmModal.button = ''
     state.confirmModal.callback = null
-  }
+  },
+
+  openAddGroupModal (state) {
+    state.addGroupModal.opened = true
+  },
+
+  closeAddGroupModal (state) {
+    state.addGroupModal.opened = false
+  },
 }
 
 export default {

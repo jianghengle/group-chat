@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="group">
     <div v-if="isMobile" class="common-header mobile-header" :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px'}">
       <div class="dropdown is-right mobile-dropdown" :class="{'is-active': dropdownOpen}" @click="dropdownOpen = !dropdownOpen">
         <div class="dropdown-trigger">
@@ -19,12 +19,12 @@
         </div>
       </div>
       <div class="is-size-5 has-text-weight-bold">
-        {{child.firstName + ' ' + child.lastName}}
+        {{group.name}}
       </div>
     </div>
     <div v-else class="common-header desktop-header" :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px'}">
       <div class="is-size-4 has-text-weight-bold">
-        {{child.firstName + ' ' + child.lastName}}
+        {{group.name}}
       </div>
       <div class="tabs">
         <ul>
@@ -42,17 +42,17 @@
           {{error}}
         </div>
         <div>
-          <div v-if="currentTab == 'Moments'">
-            Moments
+          <div v-if="currentTab == 'Chats'">
+            Chats
           </div>
           <div v-if="currentTab == 'Schedule'">
             Schedule: enrolled classes, schedule and Calender
           </div>
-          <div v-if="currentTab == 'Guardians'">
-            <child-guardians :child="child" @guardian-removed="requestChild"></child-guardians>
+          <div v-if="currentTab == 'Members'">
+            <group-members v-if="group" :group="group"></group-members>
           </div>
           <div v-if="currentTab == 'Profile'">
-            <child-profile :child="child" @child-profile-updated="requestChild"></child-profile>
+            <group-profile v-if="group" :group="group"></group-profile>
           </div>
         </div>
       </div>
@@ -61,28 +61,30 @@
 </template>
 
 <script>
-import ChildProfile from './ChildProfile'
-import ChildGuardians from './ChildGuardians'
+import GroupProfile from './GroupProfile'
+import GroupMembers from './GroupMembers'
 
 export default {
-  name: 'child-page',
+  name: 'group-page',
   components: {
-    ChildProfile,
-    ChildGuardians
+    GroupProfile,
+    GroupMembers
   },
   data () {
     return {
       waiting: false,
       error: '',
-      child: {},
-      tabs: ['Moments', 'Schedule', 'Guardians', 'Profile'],
-      currentTab: 'Moments',
+      tabs: ['Chats', 'Schedule', 'Members', 'Profile'],
+      currentTab: 'Chats',
       dropdownOpen: false
     }
   },
   computed: {
-    childId () {
-      return this.$route.params.childId
+    groupId () {
+      return this.$route.params.groupId
+    },
+    group () {
+      return this.$store.state.groups.groups[this.groupId]
     },
     isMobile () {
       return this.$store.state.ui.isMobile
@@ -94,37 +96,13 @@ export default {
       return this.$store.state.ui.mainContainerInnerWidth
     },
   },
-  watch: {
-    childId: function (val) {
-      this.requestChild()
-    }
-  },
   methods: {
     requestChild () {
-      this.waiting = true
-      this.$http.get(xHTTPx + '/guardian_get_child/' + this.childId).then(response => {
-        var resp = response.body
-        var child = resp[0]
-        var userMap = {}
-        resp[1].forEach(function(u){
-          userMap[u.id] = u
-        })
-        child.guardians = resp[2].map(function(g){
-          g.parent = userMap[g.parentId]
-          return g
-        })
-        this.child = child
-        this.waiting= false
-      }, response => {
-        this.error = 'Failed to get child!'
-        this.waiting= false
-      })
+      
     }
   },
   mounted () {
-    this.$nextTick(function(){
-      this.requestChild()
-    })
+    console.log(this.group)
   }
 }
 </script>

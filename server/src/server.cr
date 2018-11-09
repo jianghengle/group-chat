@@ -58,6 +58,34 @@ module MyServer
         HttpAPI::GuardianController.guardian_remove_guardian(env)
       end
 
+      get "/get_groups" do |env|
+        HttpAPI::GroupController.get_groups(env)
+      end
+
+      post "/add_group" do |env|
+        HttpAPI::GroupController.add_group(env)
+      end
+
+      post "/update_group/:group_id" do |env|
+        HttpAPI::GroupController.update_group(env)
+      end
+
+      post "/delete_group/:group_id" do |env|
+        HttpAPI::GroupController.delete_group(env)
+      end
+
+      get "/get_group_members/:group_id" do |env|
+        HttpAPI::GroupController.get_group_members(env)
+      end
+
+      post "/update_group_membership/:membership_id" do |env|
+        HttpAPI::GroupController.update_group_membership(env)
+      end
+
+      post "/delete_group_membership/:membership_id" do |env|
+        HttpAPI::GroupController.delete_group_membership(env)
+      end
+
       Kemal.run
     end
   end

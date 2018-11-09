@@ -3,6 +3,8 @@ import Router from 'vue-router'
 import MyHome from '@/components/MyHome'
 import ChildrenSection from '@/components/children/ChildrenSection'
 import ChildPage from '@/components/children/ChildPage'
+import GroupsSection from '@/components/groups/GroupsSection'
+import GroupPage from '@/components/groups/GroupPage'
 
 Vue.use(Router)
 
@@ -22,6 +24,16 @@ export default new Router({
       path: '/children/:childId',
       name: 'ChildPage',
       component: ChildPage
+    },
+    {
+      path: '/groups',
+      name: 'GroupsSection',
+      component: GroupsSection
+    },
+    {
+      path: '/groups/:groupId',
+      name: 'GroupPage',
+      component: GroupPage
     }
   ]
 })

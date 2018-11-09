@@ -18,6 +18,21 @@
             </li>
           </ul>
         </li>
+        <li>
+          <div>
+            <a :class="{'is-active': routePath=='/groups'}" @click="switchRoute('/groups')">
+              <span class="icon is-small plus-button" @click="openAddGroupModal">
+                <v-icon name="plus-circle"/>
+              </span>
+              <span>MY ACTIVITIES</span>
+           </a>
+          </div>
+          <ul>
+            <li v-for="g in groups" :key="'nav-group-'+g.id">
+              <a :class="{'is-active': routePath=='/groups/' + g.id}" @click="switchRoute('/groups/' + g.id)">{{g.name}}</a>
+            </li>
+          </ul>
+        </li>
       </ul>
     </aside>
   </div>
@@ -45,6 +60,11 @@ export default {
     isMobile () {
       return this.$store.state.ui.isMobile
     },
+    groups () {
+      return Object.values(this.$store.state.groups.groups).filter(function(g){
+        return g
+      })
+    }
   },
   methods: {
     openAddChildModal (event) {
@@ -59,7 +79,12 @@ export default {
       if(this.routePath != route){
         this.$router.push(route)
       }
-    }
+    },
+    openAddGroupModal (event) {
+      event.preventDefault()
+      event.stopPropagation()
+      this.$store.commit('modals/openAddGroupModal')
+    },
   }
 }
 </script>

@@ -58,6 +58,13 @@ module MyServer
         items.as(Array)
       end
 
+      def self.get_guardians_by_children_ids(children_ids)
+        query = Query.where(:child_id, children_ids)
+        items = Repo.all(Guardian, query)
+        return [] of Guardian if items.nil?
+        items.as(Array)
+      end
+
       def self.update_child_by_parent(parent, child_id, first_name, last_name, guardian_id, relation)
         guardian = Repo.get(Guardian, guardian_id)
         raise "Cannot find guardian" if guardian.nil?
