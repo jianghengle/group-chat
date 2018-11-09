@@ -51,7 +51,7 @@
               <span class="icon clickable" v-if="userRole=='owner' && member.role=='admin'" @click="updateRole(member, 'member')">
                 <v-icon name="arrow-alt-circle-down"></v-icon>
               </span>
-              <span class="icon clickable" v-if="userRole=='owner' || (userRole=='admin' && member.role=='member')" @click="deleteMember(member)">
+              <span class="icon clickable" v-if="userRole=='owner' || (userRole=='admin' && member.role=='member') || myEnrollments.includes(member)" @click="deleteMember(member)">
                 <v-icon name="minus-circle"></v-icon>
               </span>
             </td>
@@ -99,6 +99,20 @@ export default {
       var members = this.members.slice().sort(this.compareNames)
       return admins.concat(members)
     },
+    myEnrollments () {
+      var vm = this
+      return this.allMembers.filter(function(m){
+        if(m.userId == vm.userId)
+          return true
+        if(m.guardians){
+          for(var i=0;i<m.guardians.length;i++){
+            if(m.guardians[i].id == vm.userId)
+              return true
+          }
+        }
+        return false
+      })
+    }
   },
   watch: {
     group: function (val) {
@@ -145,6 +159,9 @@ export default {
         this.owner = userMap[this.group.ownerId]
         this.error = ''
       }, response => {
+        this.$store.commit('groups/deleteGroup', this.group.id)
+        this.$router.push('/groups')
+
         this.error = 'Failed to get members!'
         this.waiting= false
       })
@@ -154,6 +171,7 @@ export default {
         this.waiting= false
         this.error = ''
         this.requestGroupMembers()
+        this.requestGroups()
       }, response => {
         this.error = 'Failed to update!'
         this.waiting= false
@@ -162,7 +180,7 @@ export default {
     deleteMember (m) {
       this.$store.commit('modals/openConfirmModal', {
         title: 'Delete Member',
-        message: 'Are you sure to delete this member: ' + m.user.firstName + ' ' + m.user.lastName,
+        message: 'Are you sure to unenroll this member: ' + m.user.firstName + ' ' + m.user.lastName,
         button: 'Yes, I am sure!',
         callback: {
           method: this.deleteMemberConfirmed,
@@ -176,11 +194,35 @@ export default {
         this.waiting= false
         this.error = ''
         this.requestGroupMembers()
+        this.requestGroups()
       }, response => {
         this.error = 'Failed to delete!'
         this.waiting= false
       })
-    }
+    },
+    requestGroups () {
+      this.$http.get(xHTTPx + '/get_groups').then(response => {
+        var resp = response.body
+        var userMap = {}
+        resp[2].forEach(function(u){
+          userMap[u.id] = u
+        })
+        var groups = {}
+        resp[0].forEach(function(g){
+          g.owner = userMap[g.ownerId]
+          g.involved = []
+          groups[g.id] = g
+        })
+        resp[1].forEach(function(m){
+          var g = groups[m.groupId]
+          m.user = userMap[m.userId]
+          g.involved.push(m)
+        })
+        this.$store.commit('groups/setGroups', groups)
+      }, response => {
+        this.error = 'Failed to get groups!'
+      })
+    },
   },
   mounted () {
     this.requestGroupMembers()

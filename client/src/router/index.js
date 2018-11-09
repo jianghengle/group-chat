@@ -5,6 +5,7 @@ import ChildrenSection from '@/components/children/ChildrenSection'
 import ChildPage from '@/components/children/ChildPage'
 import GroupsSection from '@/components/groups/GroupsSection'
 import GroupPage from '@/components/groups/GroupPage'
+import PublicGroupsSection from '@/components/groups/PublicGroupsSection'
 
 Vue.use(Router)
 
@@ -34,6 +35,11 @@ export default new Router({
       path: '/groups/:groupId',
       name: 'GroupPage',
       component: GroupPage
+    },
+    {
+      path: '/public_groups',
+      name: 'PublicGroupsSection',
+      component: PublicGroupsSection
     }
   ]
 })

@@ -178,8 +178,8 @@ export default {
       if(this.userRole != 'owner')
         return
       this.$store.commit('modals/openConfirmModal', {
-        title: 'Delete Group',
-        message: 'Are you sure to delete this group: ' + this.group.name,
+        title: 'Delete Activity',
+        message: 'Are you sure to delete this activity: ' + this.group.name,
         button: 'Yes, I am sure!',
         callback: {
           method: this.deleteGroupConfirmed,

@@ -42,7 +42,7 @@ module MyServer
           user = verify_token(ctx)
           child_id = get_param!(ctx, "child_id")
           child = User.get_user_by_id(child_id)
-          relations = Guardian.get_guardians_by_child(child)
+          relations = Guardian.get_guardians_by_child_id(child.id)
           relations_json = "[" + relations.join(", ") { |r| r.to_json } + "]"
           guardian_ids = relations.map { |g| g.parent_id }
           raise "Cannot access child" unless guardian_ids.includes?(user.id)

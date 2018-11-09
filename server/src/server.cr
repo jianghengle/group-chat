@@ -86,6 +86,14 @@ module MyServer
         HttpAPI::GroupController.delete_group_membership(env)
       end
 
+      get "/get_public_groups" do |env|
+        HttpAPI::GroupController.get_public_groups(env)
+      end
+
+      post "/enroll_group/:group_id" do |env|
+        HttpAPI::GroupController.enroll_group(env)
+      end
+
       Kemal.run
     end
   end

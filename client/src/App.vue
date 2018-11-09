@@ -193,7 +193,10 @@ export default {
 }
 
 .main-view {
-  padding: 20px;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 200px;
 }
 
 .my-sidebar {

@@ -148,8 +148,14 @@ module MyServer
           membership_id = get_param!(ctx, "membership_id").to_i
           membership = Membership.get_membership_by_id(membership_id)
           group = Group.get_group_by_id(membership.group_id)
+          guardians = Guardian.get_guardians_by_child_id(membership.user_id)
+          guardian_ids = guardians.map { |g| g.parent_id }
 
           if group.owner_id == user.id
+            Membership.delete_membership(membership)
+          elsif membership.user_id == user.id
+            Membership.delete_membership(membership)
+          elsif guardian_ids.includes?(user.id)
             Membership.delete_membership(membership)
           else
             raise "cannot delete admin" unless membership.role.to_s == "member"
@@ -159,6 +165,50 @@ module MyServer
             Membership.delete_membership(membership)
           end
           {ok: true}.to_json
+        rescue ex : InsufficientParameters
+          error(ctx, "Not all required parameters were present")
+        rescue e : Exception
+          error(ctx, e.message.to_s)
+        end
+      end
+
+      def get_public_groups(ctx)
+        begin
+          user = verify_token(ctx)
+          groups = Group.get_public_groups
+          group_ids = groups.map { |g| g.id }
+          memberships = Membership.get_membership_by_group_ids(group_ids)
+          counts = {} of String => Int32
+          memberships.each do |m|
+            group_id = m.group_id.to_s
+            counts[group_id] = 0 unless counts.has_key?(group_id)
+            counts[group_id] += 1
+          end
+          groups_json = "[" + groups.join(", ") { |g| g.to_json(counts.has_key?(g.id.to_s) ? counts[g.id.to_s] : 0) } + "]"
+          user_ids = groups.map { |g| g.owner_id }
+          users = User.get_users_by_ids(user_ids)
+          users_json = "[" + users.join(", ") { |u| u.to_json } + "]"
+          "[#{groups_json}, #{users_json}]"
+        rescue ex : InsufficientParameters
+          error(ctx, "Not all required parameters were present")
+        rescue e : Exception
+          error(ctx, e.message.to_s)
+        end
+      end
+
+      def enroll_group(ctx)
+        begin
+          user = verify_token(ctx)
+          user_id = get_param!(ctx, "userId").to_i
+          group_id = get_param!(ctx, "group_id").to_i
+          group = Group.get_group_by_id(group_id)
+          raise "group not public" unless group.access.to_s == "public"
+          raise "enroll not open" unless group.enroll.to_s == "open"
+          raise "you are owner" if group.owner_id == user_id
+          membership = Membership.get_group_membership_by_user_id(group_id, user_id)
+          raise "already member" unless membership.nil?
+          Membership.add_group_membership(group_id, user_id)
+          {ok: true}
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
         rescue e : Exception

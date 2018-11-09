@@ -4,18 +4,21 @@
     <hr class="hr">
     <groups-section/>
     <hr class="hr">
+    <public-groups-section/>
   </div>
 </template>
 
 <script>
 import ChildrenSection from './children/ChildrenSection'
 import GroupsSection from './groups/GroupsSection'
+import PublicGroupsSection from './groups/PublicGroupsSection'
 
 export default {
   name: 'my-home',
   components: {
     ChildrenSection,
-    GroupsSection
+    GroupsSection,
+    PublicGroupsSection
   },
   data () {
     return {

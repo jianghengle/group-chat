@@ -67,6 +67,23 @@ module MyServer
         changeset = Repo.delete(membership)
         raise changeset.errors.to_s unless changeset.valid?
       end
+
+      def self.get_membership_by_group_ids(group_ids)
+        query = Query.where(:group_id, group_ids)
+        items = Repo.all(Membership, query)
+        return [] of Membership if items.nil?
+        items.as(Array)
+      end
+
+      def self.add_group_membership(group_id, user_id)
+        membership = Membership.new
+        membership.group_id = group_id
+        membership.user_id = user_id
+        membership.role = "member"
+        membership.conversation = false
+        changeset = Repo.insert(membership)
+        raise changeset.errors.to_s unless changeset.valid?
+      end
     end
   end
 end

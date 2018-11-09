@@ -12,7 +12,7 @@ module MyServer
         field :timestamp, Int64
       end
 
-      def to_json
+      def to_json(membership_count = -1)
         String.build do |str|
           str << "{"
           str << "\"id\":" << @id << ","
@@ -23,6 +23,7 @@ module MyServer
           str << "\"access\":" << @access.to_json << ","
           str << "\"enroll\":" << @enroll.to_json << ","
           str << "\"ownerId\":" << @owner_id.to_json << ","
+          str << "\"membershipCount\":" << membership_count.to_json << "," if membership_count > -1
           str << "\"timestamp\":" << @timestamp.to_json
           str << "}"
         end
@@ -66,6 +67,13 @@ module MyServer
       def self.update_group(group)
         changeset = Repo.update(group)
         raise changeset.errors.to_s unless changeset.valid?
+      end
+
+      def self.get_public_groups
+        query = Query.where("owner_id IS NOT NULL").where(access: "public")
+        items = Repo.all(Group, query)
+        return [] of Group if items.nil?
+        items.as(Array)
       end
     end
   end

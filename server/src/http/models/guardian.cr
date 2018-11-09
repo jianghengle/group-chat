@@ -51,8 +51,8 @@ module MyServer
         raise changeset.errors.to_s unless changeset.valid?
       end
 
-      def self.get_guardians_by_child(child)
-        query = Query.where(child_id: child.id)
+      def self.get_guardians_by_child_id(child_id)
+        query = Query.where(child_id: child_id)
         items = Repo.all(Guardian, query)
         return [] of Guardian if items.nil?
         items.as(Array)

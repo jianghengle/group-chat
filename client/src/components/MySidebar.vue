@@ -33,6 +33,7 @@
             </li>
           </ul>
         </li>
+        <li><a :class="{'is-active': routePath=='/public_groups'}" @click="switchRoute('/public_groups')">SEARCH ACTIVITIES</a></li>
       </ul>
     </aside>
   </div>

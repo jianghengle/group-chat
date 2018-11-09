@@ -26,8 +26,9 @@
                 <div class="media-content">
                   <div class="content">
                     <p>
-                      <strong>{{g.name}}</strong><small> &nbsp; by {{g.owner.firstName + ' ' + g.owner.lastName}}</small><br/>
-                      <span>{{g.description}}</span><br/>
+                      <strong>{{g.name}}</strong><br/>
+                      <small>{{g.category}} by {{g.owner.firstName + ' ' + g.owner.lastName}}</small><br/>
+                      <small>{{g.description}}</small><br/>
                       <small>{{g.access}} access | {{g.enroll}} enroll</small>
                     </p>
                   </div>
@@ -45,8 +46,9 @@
                 <div class="media-content">
                   <div class="content">
                     <p>
-                      <strong>{{g.name}}</strong><small> &nbsp;{{g.category}} by {{g.owner.firstName + ' ' + g.owner.lastName}}</small><br/>
-                      <span>{{g.description}}</span><br/>
+                      <strong>{{g.name}}</strong><br/>
+                      <small>{{g.category}} by {{g.owner.firstName + ' ' + g.owner.lastName}}</small><br/>
+                      <small>{{g.description}}</small><br/>
                       <small>
                         Enrolled: 
                         <span v-for="(m, i) in g.involved">
