@@ -95,7 +95,9 @@ export default {
       return this.$store.state.groups.groups
     },
     children () {
-      return this.$store.state.children.children
+      return Object.values(this.$store.state.children.children).filter(function(c){
+        return c
+      })
     },
     myEnrollments () {
       var enrollments = {}

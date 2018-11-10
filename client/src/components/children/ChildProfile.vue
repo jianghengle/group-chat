@@ -115,7 +115,6 @@ export default {
       this.$http.post(xHTTPx + '/guardian_update_child/' + this.childId, this.newProfile).then(response => {
         this.waiting= false
         this.error = ''
-        this.$emit('child-profile-updated')
       }, response => {
         this.error = 'Failed to update!'
         this.waiting= false
@@ -138,24 +137,9 @@ export default {
     deleteChildConfirmed () {
       var message = {guardianId: this.oldGuardian.id}
       this.$http.post(xHTTPx + '/guardian_delete_child/' + this.childId, message).then(response => {
-        this.requestChildren()
         this.$router.push('/children')
       }, response => {
         this.error = 'Failed to delete children!'
-      })
-    },
-    requestChildren () {
-      this.$http.get(xHTTPx + '/guardian_get_children').then(response => {
-        var resp = response.body
-        var userMap = {}
-        resp[0].forEach(function(u){
-          userMap[u.id] = u
-        })
-        var children = resp[1].map(function(c){
-          c.child = userMap[c.childId]
-          return c
-        })
-        this.$store.commit('children/setChildren', children)
       })
     },
   },

@@ -32,6 +32,28 @@ module MyServer
         end
       end
 
+      def get_group(ctx)
+        begin
+          user = verify_token(ctx)
+          group_id = get_param!(ctx, "group_id").to_i
+          group = Group.get_group_by_id(group_id)
+          guardians = Guardian.get_guardians_by_parent(user)
+          user_ids = guardians.map { |g| g.child_id }
+          user_ids << user.id
+          memberships = Membership.get_group_memberships_by_user_ids(user_ids, group_id)
+          raise "cannot get group" if ((group.owner_id != user.id) && memberships.empty?)
+          memberships_json = "[" + memberships.join(", ") { |m| m.to_json } + "]"
+          user_ids << group.owner_id
+          users = User.get_users_by_ids(user_ids)
+          users_json = "[" + users.join(", ") { |u| u.to_json } + "]"
+          "[#{group.to_json}, #{memberships_json}, #{users_json}]"
+        rescue ex : InsufficientParameters
+          error(ctx, "Not all required parameters were present")
+        rescue e : Exception
+          error(ctx, e.message.to_s)
+        end
+      end
+
       def add_group(ctx)
         begin
           user = verify_token(ctx)
@@ -72,6 +94,9 @@ module MyServer
           group.access = get_param!(ctx, "access")
           group.enroll = get_param!(ctx, "enroll")
           Group.update_group(group)
+          user_ids = Membership.get_group_related_user_ids(group)
+          message = ["pullGroup", group_id.to_s].to_json
+          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
           group.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
@@ -87,9 +112,12 @@ module MyServer
           group = Group.get_group_by_id(group_id)
           raise "cannot delete group" unless user.id == group.owner_id
 
+          user_ids = Membership.get_group_related_user_ids(group)
+          message = ["pullGroup", group_id.to_s].to_json
           Membership.delete_memberships_by_group_id(group_id)
           group.owner_id = nil
           Group.update_group(group)
+          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
           {ok: true}.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
@@ -134,6 +162,9 @@ module MyServer
           raise "wrong role" unless ["admin", "member"].includes?(role)
           membership.role = role
           Membership.update_membership(membership)
+          user_ids = Membership.get_group_related_user_ids(group)
+          message = ["pullGroup", group.id.to_s].to_json
+          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
           membership.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
@@ -148,6 +179,10 @@ module MyServer
           membership_id = get_param!(ctx, "membership_id").to_i
           membership = Membership.get_membership_by_id(membership_id)
           group = Group.get_group_by_id(membership.group_id)
+
+          user_ids = Membership.get_group_related_user_ids(group)
+          message = ["pullGroup", group.id.to_s].to_json
+
           guardians = Guardian.get_guardians_by_child_id(membership.user_id)
           guardian_ids = guardians.map { |g| g.parent_id }
 
@@ -164,6 +199,7 @@ module MyServer
             raise "you are not admin" unless user_membership.role.to_s == "admin"
             Membership.delete_membership(membership)
           end
+          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
           {ok: true}.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
@@ -208,6 +244,9 @@ module MyServer
           membership = Membership.get_group_membership_by_user_id(group_id, user_id)
           raise "already member" unless membership.nil?
           Membership.add_group_membership(group_id, user_id)
+          user_ids = Membership.get_group_related_user_ids(group)
+          message = ["pullGroup", group.id.to_s].to_json
+          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
           {ok: true}
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")

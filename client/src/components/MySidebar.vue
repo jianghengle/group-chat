@@ -2,14 +2,14 @@
   <div>
     <aside class="menu">
       <ul class="menu-list">
-        <li><a :class="{'is-active': routePath=='/'}" @click="switchRoute('/')">HOME</a></li>
+        <li><a :class="{'is-active': routePath=='/'}" @click="switchRoute('/')">Home</a></li>
         <li>
           <div>
             <a :class="{'is-active': routePath=='/children'}" @click="switchRoute('/children')">
               <span class="icon is-small plus-button" @click="openAddChildModal">
                 <v-icon name="plus-circle"/>
               </span>
-              <span>MY CHILDREN</span>
+              <span>My Children</span>
            </a>
           </div>
           <ul>
@@ -24,7 +24,7 @@
               <span class="icon is-small plus-button" @click="openAddGroupModal">
                 <v-icon name="plus-circle"/>
               </span>
-              <span>MY ACTIVITIES</span>
+              <span>My Activities</span>
            </a>
           </div>
           <ul>
@@ -33,7 +33,8 @@
             </li>
           </ul>
         </li>
-        <li><a :class="{'is-active': routePath=='/public_groups'}" @click="switchRoute('/public_groups')">SEARCH ACTIVITIES</a></li>
+        <li><a :class="{'is-active': routePath=='/public_groups'}" @click="switchRoute('/public_groups')">Search Activities</a></li>
+        <li><a>Direct Messages</a></li>
       </ul>
     </aside>
   </div>
@@ -53,7 +54,9 @@ export default {
   },
   computed: {
     children () {
-      return this.$store.state.children.children
+      return Object.values(this.$store.state.children.children).filter(function(c){
+        return c
+      })
     },
     routePath () {
       return this.$route.path

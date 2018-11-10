@@ -9,6 +9,8 @@ require "./http/errors/*"
 require "./http/controllers/*"
 require "./http/middleware/*"
 
+require "./ws/*"
+
 module Repo
   extend Crecto::Repo
 
@@ -62,6 +64,10 @@ module MyServer
         HttpAPI::GroupController.get_groups(env)
       end
 
+      get "/get_group/:group_id" do |env|
+        HttpAPI::GroupController.get_group(env)
+      end
+
       post "/add_group" do |env|
         HttpAPI::GroupController.add_group(env)
       end
@@ -92,6 +98,36 @@ module MyServer
 
       post "/enroll_group/:group_id" do |env|
         HttpAPI::GroupController.enroll_group(env)
+      end
+
+      get "/get_group_chats/:group_id" do |env|
+        HttpAPI::ChatController.get_group_chats(env)
+      end
+
+      get "/get_group_chat/:chat_id" do |env|
+        HttpAPI::ChatController.get_group_chat(env)
+      end
+
+      post "/add_group_chat/:group_id" do |env|
+        HttpAPI::ChatController.add_group_chat(env)
+      end
+
+      post "/add_group_chat_with_file/:group_id" do |env|
+        HttpAPI::ChatController.add_group_chat_with_file(env)
+      end
+
+      get "/download_attachment/:key" do |env|
+        HttpAPI::ChatController.download_attachment(env)
+      end
+
+      ws "/" do |socket, env|
+        unless WS::ClientStore.add_client(socket, env)
+          socket.close
+        end
+
+        socket.on_close do
+          WS::ClientStore.remove_client(socket)
+        end
       end
 
       Kemal.run

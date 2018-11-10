@@ -9,21 +9,6 @@ export const state = {
 export const mutations = {
 
   setGroups (state, groups) {
-    Object.values(groups).forEach(function(group){
-      if(state.groups[group.id]){
-        var g = state.groups[group.id]
-        g.name = group.name
-        g.category = group.category
-        g.description = group.description
-        g.capacity = group.capacity
-        g.access = group.access
-        g.enroll = group.enroll
-        g.involves = group.involves
-        g.owner = group.owner
-      }else{
-        Vue.set(state.groups, group.id, group)
-      }
-    })
     state.groups = groups
   },
 
@@ -32,17 +17,32 @@ export const mutations = {
   },
 
   updateGroup (state, group) {
-    var g = state.groups[group.id]
-    g.name = group.name
-    g.category = group.category
-    g.description = group.description
-    g.capacity = group.capacity
-    g.access = group.access
-    g.enroll = group.enroll
+    if(state.groups[group.id]){
+      var g = state.groups[group.id]
+      g.name = group.name
+      g.category = group.category
+      g.description = group.description
+      g.capacity = group.capacity
+      g.access = group.access
+      g.enroll = group.enroll
+      g.ownerId = group.ownerId
+      g.owner = group.owner
+      g.involved = group.involved
+    }else{
+      Vue.set(state.groups, group.id, group)
+    }
   },
 
   deleteGroup (state, groupId) {
     state.groups[groupId] = null
+  },
+
+  setGroupChats (state, obj) {
+    state.groups[obj.groupId].chats = obj.chats
+  },
+
+  pushGroupChat (state, obj) {
+    state.groups[obj.groupId].chats.push(obj.chat)
   }
 }
 

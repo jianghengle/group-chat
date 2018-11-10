@@ -28,7 +28,10 @@ module MyServer
           first_name = get_param!(ctx, "firstName")
           last_name = get_param!(ctx, "lastName")
           relation = get_param!(ctx, "relation")
-          Guardian.add_child_by_parent(user, first_name, last_name, relation)
+          child_id = Guardian.add_child_by_parent(user, first_name, last_name, relation)
+          user_ids = [user.id.to_s]
+          message = ["pullChild", child_id.to_s].to_json
+          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
           {ok: true}.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
@@ -65,6 +68,10 @@ module MyServer
           relation = get_param!(ctx, "relation")
           guardian_id = get_param!(ctx, "guardianId")
           Guardian.update_child_by_parent(user, child_id, first_name, last_name, guardian_id, relation)
+          guardians = Guardian.get_guardians_by_child_id(child_id)
+          user_ids = guardians.map { |g| g.parent_id.to_s }
+          message = ["pullChild", child_id.to_s].to_json
+          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
           {ok: true}.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
@@ -78,7 +85,11 @@ module MyServer
           user = verify_token(ctx)
           child_id = get_param!(ctx, "child_id").to_i
           guardian_id = get_param!(ctx, "guardianId")
+          guardians = Guardian.get_guardians_by_child_id(child_id)
+          user_ids = guardians.map { |g| g.parent_id.to_s }
+          message = ["pullChild", child_id.to_s].to_json
           Guardian.delete_child_by_parent(user, child_id, guardian_id)
+          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
           {ok: true}.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
@@ -92,7 +103,11 @@ module MyServer
           user = verify_token(ctx)
           guardian_id = get_param!(ctx, "guardian_id").to_i
           master_guardian_id = get_param!(ctx, "masterGuardianId").to_i
-          Guardian.remove_guardian_by_parent(user, master_guardian_id, guardian_id)
+          guardians = Guardian.remove_guardian_by_parent(user, master_guardian_id, guardian_id)
+          user_ids = guardians.map { |g| g.parent_id.to_s }
+          child_id = guardians[0].child_id.to_s
+          message = ["pullChild", child_id].to_json
+          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
           {ok: true}.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")

@@ -125,6 +125,7 @@ export default {
         var group = resp[0]
         group.owner = resp[1]
         group.involved = []
+        group.chats = null
         this.$store.commit('groups/addGroup', group) 
         if(this.$route.path != '/' && this.$route.path != '/groups'){
           this.$router.push('/groups')

@@ -24,9 +24,10 @@ module MyServer
         end
       end
 
-      def self.get_group_memberships_by_user_ids(user_ids)
+      def self.get_group_memberships_by_user_ids(user_ids, group_id = nil)
         return [] of Membership if user_ids.empty?
         query = Query.where(conversation: "false").where(:user_id, user_ids)
+        query = query.where(group_id: group_id) unless group_id.nil?
         items = Repo.all(Membership, query)
         return [] of Membership if items.nil?
         items.as(Array)
@@ -42,6 +43,11 @@ module MyServer
 
       def self.delete_memberships_by_group_id(group_id)
         query = Query.where(group_id: group_id)
+        Repo.delete_all(Membership, query)
+      end
+
+      def self.delete_group_membership_by_user_id(user_id)
+        query = Query.where(user_id: user_id)
         Repo.delete_all(Membership, query)
       end
 
@@ -83,6 +89,18 @@ module MyServer
         membership.conversation = false
         changeset = Repo.insert(membership)
         raise changeset.errors.to_s unless changeset.valid?
+      end
+
+      def self.get_group_related_user_ids(group)
+        query = Query.where(group_id: group.id)
+        items = Repo.all(Membership, query)
+        return [] of String if items.nil?
+        children_ids = items.as(Array).map { |m| m.user_id }
+        guardians = Guardian.get_guardians_by_children_ids(children_ids)
+        parent_ids = guardians.map { |g| g.parent_id }
+        user_ids = children_ids | parent_ids
+        user_ids << group.owner_id
+        user_ids.map { |u| u.to_s }
       end
     end
   end

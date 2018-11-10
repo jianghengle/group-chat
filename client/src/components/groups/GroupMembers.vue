@@ -159,9 +159,7 @@ export default {
         this.owner = userMap[this.group.ownerId]
         this.error = ''
       }, response => {
-        this.$store.commit('groups/deleteGroup', this.group.id)
         this.$router.push('/groups')
-
         this.error = 'Failed to get members!'
         this.waiting= false
       })
@@ -171,7 +169,6 @@ export default {
         this.waiting= false
         this.error = ''
         this.requestGroupMembers()
-        this.requestGroups()
       }, response => {
         this.error = 'Failed to update!'
         this.waiting= false
@@ -194,33 +191,9 @@ export default {
         this.waiting= false
         this.error = ''
         this.requestGroupMembers()
-        this.requestGroups()
       }, response => {
         this.error = 'Failed to delete!'
         this.waiting= false
-      })
-    },
-    requestGroups () {
-      this.$http.get(xHTTPx + '/get_groups').then(response => {
-        var resp = response.body
-        var userMap = {}
-        resp[2].forEach(function(u){
-          userMap[u.id] = u
-        })
-        var groups = {}
-        resp[0].forEach(function(g){
-          g.owner = userMap[g.ownerId]
-          g.involved = []
-          groups[g.id] = g
-        })
-        resp[1].forEach(function(m){
-          var g = groups[m.groupId]
-          m.user = userMap[m.userId]
-          g.involved.push(m)
-        })
-        this.$store.commit('groups/setGroups', groups)
-      }, response => {
-        this.error = 'Failed to get groups!'
       })
     },
   },

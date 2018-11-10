@@ -168,7 +168,6 @@ export default {
       this.$http.post(xHTTPx + '/update_group/' + this.group.id, this.newProfile).then(response => {
         this.waiting= false
         this.error = ''
-        this.$store.commit('groups/updateGroup', response.body)
       }, response => {
         this.error = 'Failed to update!'
         this.waiting= false
@@ -190,7 +189,6 @@ export default {
     },
     deleteGroupConfirmed () {
       this.$http.post(xHTTPx + '/delete_group/' + this.group.id).then(response => {
-        this.$store.commit('groups/deleteGroup', this.group.id)
         this.$router.push('/groups')
       }, response => {
         this.error = 'Failed to delete group!'

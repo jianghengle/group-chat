@@ -84,6 +84,36 @@ class Membership < Crecto::Model
   end
 end
 
+class Chat < Crecto::Model
+  schema "chats" do
+    field :user_id, Int64
+    field :group_id, Int64
+    field :message, String
+    field :timestamp, Int64
+    field :attachment_key, String
+    field :request_key, String
+    field :starred, Bool
+  end
+
+  def self.can_access(user)
+    return false unless user.is_a? User
+    user.role.to_s == "superuser"
+  end
+end
+
+class Attachment < Crecto::Model
+  schema "attachments" do
+    field :key, String
+    field :filename, String
+    field :location, String
+  end
+
+  def self.can_access(user)
+    return false unless user.is_a? User
+    user.role.to_s == "superuser"
+  end
+end
+
 CrectoAdmin.config do |config|
   config.auth_enabled = true
   config.auth = CrectoAdmin::DatabaseAuth
@@ -100,6 +130,8 @@ admin_resource(User, Repo)
 admin_resource(Guardian, Repo)
 admin_resource(Group, Repo)
 admin_resource(Membership, Repo)
+admin_resource(Chat, Repo)
+admin_resource(Attachment, Repo)
 
 Kemal::Session.config do |config|
   config.secret = "sTHxjX3R"

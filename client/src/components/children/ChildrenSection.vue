@@ -54,7 +54,9 @@ export default {
   },
   computed: {
     children () {
-      return this.$store.state.children.children
+      return Object.values(this.$store.state.children.children).filter(function(c){
+        return c
+      })
     }
   },
   methods: {

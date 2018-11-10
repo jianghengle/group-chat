@@ -9,6 +9,7 @@ export const state = {
     callback: null
   },
   addGroupModal: {opened: false},
+  uploadFileModal: {opened: false, message: ''},
 }
 
 // mutations
@@ -44,6 +45,16 @@ export const mutations = {
 
   closeAddGroupModal (state) {
     state.addGroupModal.opened = false
+  },
+
+  openUploadFileModal (state, message) {
+    state.uploadFileModal.message = message
+    state.uploadFileModal.opened = true
+  },
+
+  closeUploadFileModal (state) {
+    state.uploadFileModal.message = ''
+    state.uploadFileModal.opened = false
   },
 }
 

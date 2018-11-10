@@ -77,7 +77,6 @@ export default {
       var message = {firstName: this.firstName.trim(), lastName: this.lastName, relation: this.relation}
       this.$http.post(xHTTPx + '/guardian_add_child', message).then(response => {
         this.waiting= false
-        this.requestChildren()
         if(this.$route.path != '/' && this.$route.path != '/children'){
           this.$router.push('/children')
         }
@@ -86,21 +85,7 @@ export default {
         this.error = 'Failed to add child!'
         this.waiting= false
       })
-    },
-    requestChildren () {
-      this.$http.get(xHTTPx + '/guardian_get_children').then(response => {
-        var resp = response.body
-        var userMap = {}
-        resp[0].forEach(function(u){
-          userMap[u.id] = u
-        })
-        var children = resp[1].map(function(c){
-          c.child = userMap[c.childId]
-          return c
-        })
-        this.$store.commit('children/setChildren', children)
-      })
-    },
+    }
   }
 }
 </script>

@@ -20,17 +20,20 @@
     <add-child-modal></add-child-modal>
     <confirm-modal></confirm-modal>
     <add-group-modal></add-group-modal>
+    <upload-file-modal></upload-file-modal>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
+import DateForm from 'dateformat'
 import MyHeader from './components/MyHeader'
 import SignIn from './components/SignIn'
 import MySidebar from './components/MySidebar'
 import AddChildModal from './components/modals/AddChildModal'
 import ConfirmModal from './components/modals/ConfirmModal'
 import AddGroupModal from './components/modals/AddGroupModal'
+import UploadFileModal from './components/modals/UploadFileModal'
 
 export default {
   name: 'App',
@@ -40,19 +43,24 @@ export default {
     MySidebar,
     AddChildModal,
     ConfirmModal,
-    AddGroupModal
+    AddGroupModal,
+    UploadFileModal
   },
   data () {
     return {
       windowWidth: 0,
       maxWidth: 1500,
       sidebarWidth: 280,
-      mobileWidth: 768
+      mobileWidth: 768,
+      ws: null,
     }
   },
   computed: {
     token () {
       return this.$store.state.user.token
+    },
+    userId () {
+      return this.$store.state.user.userId
     },
     showSidebar () {
       return this.$store.state.ui.showSidebar
@@ -95,7 +103,13 @@ export default {
     },
     mainContainerInnerWidth: function (val) {
       this.$store.commit('ui/setMainContainerInnerWidth', val)
-    }
+    },
+    token: function(val) {
+      if(!val && this.ws){
+        this.ws.close()
+      }
+    },
+
   },
   methods: {
     handleResize () {
@@ -105,6 +119,7 @@ export default {
       this.$nextTick(function(){
         this.requestChildren()
         this.requestGroups()
+        this.connectWebSocket()
       })
     },
     requestChildren () {
@@ -126,7 +141,6 @@ export default {
     requestGroups () {
       this.$http.get(xHTTPx + '/get_groups').then(response => {
         var resp = response.body
-        console.log(resp)
         var userMap = {}
         resp[2].forEach(function(u){
           userMap[u.id] = u
@@ -135,6 +149,7 @@ export default {
         resp[0].forEach(function(g){
           g.owner = userMap[g.ownerId]
           g.involved = []
+          g.chats = null
           groups[g.id] = g
         })
         resp[1].forEach(function(m){
@@ -146,7 +161,89 @@ export default {
       }, response => {
         this.error = 'Failed to get groups!'
       })
-    }
+    },
+    connectWebSocket () {
+      var vm = this
+      var url = xWEBSOCKETx + '/?token=' +this.token
+      this.ws = new WebSocket(url)
+      this.ws.onopen = function () {
+        console.log('ws opened')
+      }
+      this.ws.onmessage = function (evt) {
+        var msg = evt.data
+        var obj = JSON.parse(msg)
+        console.log('ws msg', obj)
+        vm[obj[0]](obj[1])
+      }
+      this.ws.onclose = function () {
+        console.log('ws closed')
+        vm.ws = null
+        if(vm.token){
+          console.log('try to reconnect in 2 secs')
+          setTimeout(vm.connectWebSocket(), 2000)
+        }
+      }
+    },
+    pullChild (childId) {
+      this.$http.get(xHTTPx + '/guardian_get_child/' + childId).then(response => {
+        var resp = response.body
+        var child = null
+        var vm = this
+        resp[2].forEach(function(g){
+          if(g.parentId == vm.userId) {
+            child = g
+            child.child = resp[0]
+          }
+        })
+        this.$store.commit('children/updateChild', child)
+      }, response => {
+        this.$store.commit('children/deleteChild', childId)
+      })
+    },
+    pullGroup (groupId) {
+      this.$http.get(xHTTPx + '/get_group/' + groupId).then(response => {
+        var resp = response.body
+        var userMap = {}
+        resp[2].forEach(function(u){
+          userMap[u.id] = u
+        })
+        var g = resp[0]
+        g.owner = userMap[g.ownerId]
+        g.involved = []
+        resp[1].forEach(function(m){
+          if(m.groupId == g.id){
+            m.user = userMap[m.userId]
+            g.involved.push(m)
+          }
+        })
+        this.$store.commit('groups/updateGroup', g)
+      }, response => {
+        this.$store.commit('groups/deleteGroup', groupId)
+      })
+    },
+    pullChat (chatId) {
+      this.$http.get(xHTTPx + '/get_group_chat/' + chatId).then(response => {
+        var resp = response.body
+        var c = resp[0]
+        c.user = resp[1]
+        var d = new Date(c.timestamp)
+        c.timeLabel = DateForm(d, 'h:MM TT mmm d')
+        if(c.attachmentKey && c.filename){
+          c.downloadLink = xHTTPx + /download_attachment/ + c.attachmentKey
+          var ext = c.filename.includes('.') ? c.filename.split('.').pop().toLowerCase() : ''
+          var imageExts = ['png', 'jpg', 'jpeg', 'gif', 'bmp']
+          var videoExts = ['mp4', 'webm', 'ogg']
+          if(imageExts.includes(ext)){
+            c.fileType = 'image'
+          }else if(videoExts.includes(ext)){
+            c.fileType = 'video'
+          }else{
+            c.fileType = 'other'
+          }
+        }
+        this.$store.commit('groups/pushGroupChat',  {groupId: c.groupId, chat: c})
+      })
+    },
   },
   mounted () {
     this.windowWidth = window.innerWidth

@@ -43,7 +43,7 @@
         </div>
         <div>
           <div v-if="currentTab == 'Chats'">
-            Chats
+            <chats v-if="group" :group="group"></chats>
           </div>
           <div v-if="currentTab == 'Schedule'">
             Schedule: enrolled classes, schedule and Calender
@@ -63,12 +63,14 @@
 <script>
 import GroupProfile from './GroupProfile'
 import GroupMembers from './GroupMembers'
+import Chats from './Chats'
 
 export default {
   name: 'group-page',
   components: {
     GroupProfile,
-    GroupMembers
+    GroupMembers,
+    Chats
   },
   data () {
     return {
@@ -111,7 +113,7 @@ export default {
 <style lang="scss" scoped>
 
 .desktop-header {
-  height: 110px;
+  height: 100px;
   padding-top: 15px;
   padding-left: 20px;
   padding-right: 20px;

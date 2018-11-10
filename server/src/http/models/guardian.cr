@@ -49,6 +49,7 @@ module MyServer
         guardian.relation = relation
         changeset = Repo.insert(guardian)
         raise changeset.errors.to_s unless changeset.valid?
+        child_id
       end
 
       def self.get_guardians_by_child_id(child_id)
@@ -86,8 +87,9 @@ module MyServer
         raise "Cannot verify guardian" unless (guardian.parent_id == parent.id && guardian.child_id == child_id && guardian.master)
         child = User.get_user_by_id(child_id)
 
-        changeset = Repo.delete(guardian)
-        raise changeset.errors.to_s unless changeset.valid?
+        Membership.delete_group_membership_by_user_id(child.id)
+        query = Query.where(child_id: child_id)
+        Repo.delete_all(Guardian, query)
         child.status = "deleted"
         changeset = Repo.update(child)
         raise changeset.errors.to_s unless changeset.valid?
@@ -102,6 +104,7 @@ module MyServer
         raise "Cannot verify guardian" unless (master_guardian.child_id == guardian.child_id)
         changeset = Repo.delete(guardian)
         raise changeset.errors.to_s unless changeset.valid?
+        [master_guardian, guardian]
       end
     end
   end
