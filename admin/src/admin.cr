@@ -15,9 +15,7 @@ class User < Crecto::Model
     field :encrypted_password, String
     field :auth_token, String
     field :role, String
-    field :first_name, String
-    field :last_name, String
-    field :status, String
+    field :full_name, String
   end
 
   def self.form_attributes
@@ -25,23 +23,7 @@ class User < Crecto::Model
      {:encrypted_password, "password"},
      {:auth_token, "string"},
      {:role, "enum", ["superuser", "user"]},
-     {:first_name, "string"},
-     {:last_name, "string"},
-     {:status, "enum", ["active", "inactive", "deleted"]}]
-  end
-
-  def self.can_access(user)
-    return false unless user.is_a? User
-    user.role.to_s == "superuser"
-  end
-end
-
-class Guardian < Crecto::Model
-  schema "guardians" do
-    field :parent_id, Int64
-    field :child_id, Int64
-    field :master, Bool
-    field :relation, String
+     {:full_name, "string"}]
   end
 
   def self.can_access(user)
@@ -55,9 +37,7 @@ class Group < Crecto::Model
     field :name, String
     field :category, String
     field :description, String
-    field :capacity, Int64
-    field :access, String
-    field :enroll, String
+    field :status, String
     field :owner_id, Int64
     field :timestamp, Int64
   end
@@ -72,9 +52,6 @@ class Membership < Crecto::Model
   schema "memberships" do
     field :user_id, Int64
     field :group_id, Int64
-    field :conversation, Bool
-    field :role, String
-    field :status, String
     field :timestamp, Int64
   end
 
@@ -91,8 +68,6 @@ class Chat < Crecto::Model
     field :message, String
     field :timestamp, Int64
     field :attachment_key, String
-    field :request_key, String
-    field :starred, Bool
   end
 
   def self.can_access(user)
@@ -127,7 +102,6 @@ end
 init_admin()
 
 admin_resource(User, Repo)
-admin_resource(Guardian, Repo)
 admin_resource(Group, Repo)
 admin_resource(Membership, Repo)
 admin_resource(Chat, Repo)

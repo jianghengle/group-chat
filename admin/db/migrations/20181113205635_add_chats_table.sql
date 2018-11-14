@@ -6,8 +6,6 @@ CREATE TABLE chats(
   message character varying,
   timestamp BIGINT,
   attachment_key character varying,
-  request_key character varying,
-  starred bool,
   created_at timestamp without time zone,
   updated_at timestamp without time zone
 );

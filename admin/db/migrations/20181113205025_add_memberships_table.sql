@@ -3,9 +3,6 @@ CREATE TABLE memberships(
   id BIGSERIAL PRIMARY KEY,
   user_id INTEGER,
   group_id INTEGER,
-  conversation bool,
-  role character varying,
-  status character varying,
   timestamp BIGINT,
   created_at timestamp without time zone,
   updated_at timestamp without time zone
