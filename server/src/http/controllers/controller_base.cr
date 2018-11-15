@@ -40,7 +40,6 @@ module MyServer
       private def verify_token(ctx)
         token = get_header!(ctx, "Authorization")
         user = User.get_user_by_token(token)
-        raise "invalid user status" unless user.status.to_s == "active"
         user
       end
     end

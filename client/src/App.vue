@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <my-header></my-header>
     <div v-if="token">
       <div class="sidebar-container" v-show="showSidebar" :style="{'width': sidebarContainerWidth+'px', 'padding-left': sidePadding+'px'}">
         <div class="my-sidebar">
@@ -14,12 +13,10 @@
       </div>
     </div>
     <div v-else>
-      <sign-in @user-signed-in="initApp"></sign-in>
+      <sign-in @user-signed-in="userSignedIn"></sign-in>
     </div>
 
-    <add-child-modal></add-child-modal>
     <confirm-modal></confirm-modal>
-    <add-group-modal></add-group-modal>
     <upload-file-modal></upload-file-modal>
   </div>
 </template>
@@ -27,23 +24,17 @@
 <script>
 import Vue from 'vue'
 import DateForm from 'dateformat'
-import MyHeader from './components/MyHeader'
 import SignIn from './components/SignIn'
 import MySidebar from './components/MySidebar'
-import AddChildModal from './components/modals/AddChildModal'
 import ConfirmModal from './components/modals/ConfirmModal'
-import AddGroupModal from './components/modals/AddGroupModal'
 import UploadFileModal from './components/modals/UploadFileModal'
 
 export default {
   name: 'App',
   components: {
-    MyHeader,
     SignIn,
     MySidebar,
-    AddChildModal,
     ConfirmModal,
-    AddGroupModal,
     UploadFileModal
   },
   data () {
@@ -92,7 +83,10 @@ export default {
       var paddingRight = this.sidePadding
       var paddingLeft = this.showSidebar ? 0 : this.sidePadding
       return this.mainContainerWidth - paddingRight - paddingLeft
-    }
+    },
+    routePath () {
+      return this.$route.path
+    },
   },
   watch: {
     isMobile: function (val) {
@@ -104,59 +98,32 @@ export default {
     mainContainerInnerWidth: function (val) {
       this.$store.commit('ui/setMainContainerInnerWidth', val)
     },
-    token: function(val) {
+    token: function (val) {
       if(!val && this.ws){
         this.ws.close()
       }
     },
-
+    routePath: function (val) {
+      if (val == '/add_group') {
+        this.requestGroups()
+      }
+    }
   },
   methods: {
+    openSidebar () {
+      this.$store.commit('ui/setShowSidebar', true)
+    },
     handleResize () {
       this.windowWidth = window.innerWidth
     },
-    initApp () {
+    userSignedIn () {
       this.$nextTick(function(){
-        this.requestChildren()
         this.requestGroups()
-        this.connectWebSocket()
-      })
-    },
-    requestChildren () {
-      this.$http.get(xHTTPx + '/guardian_get_children').then(response => {
-        var resp = response.body
-        var userMap = {}
-        resp[0].forEach(function(u){
-          userMap[u.id] = u
-        })
-        var children = resp[1].map(function(c){
-          c.child = userMap[c.childId]
-          return c
-        })
-        this.$store.commit('children/setChildren', children)
-      }, response => {
-        this.error = 'Failed to get children!'
       })
     },
     requestGroups () {
       this.$http.get(xHTTPx + '/get_groups').then(response => {
-        var resp = response.body
-        var userMap = {}
-        resp[2].forEach(function(u){
-          userMap[u.id] = u
-        })
-        var groups = {}
-        resp[0].forEach(function(g){
-          g.owner = userMap[g.ownerId]
-          g.involved = []
-          g.chats = null
-          groups[g.id] = g
-        })
-        resp[1].forEach(function(m){
-          var g = groups[m.groupId]
-          m.user = userMap[m.userId]
-          g.involved.push(m)
-        })
+        var groups = response.body
         this.$store.commit('groups/setGroups', groups)
       }, response => {
         this.error = 'Failed to get groups!'
@@ -184,39 +151,10 @@ export default {
         }
       }
     },
-    pullChild (childId) {
-      this.$http.get(xHTTPx + '/guardian_get_child/' + childId).then(response => {
-        var resp = response.body
-        var child = null
-        var vm = this
-        resp[2].forEach(function(g){
-          if(g.parentId == vm.userId) {
-            child = g
-            child.child = resp[0]
-          }
-        })
-        this.$store.commit('children/updateChild', child)
-      }, response => {
-        this.$store.commit('children/deleteChild', childId)
-      })
-    },
     pullGroup (groupId) {
       this.$http.get(xHTTPx + '/get_group/' + groupId).then(response => {
-        var resp = response.body
-        var userMap = {}
-        resp[2].forEach(function(u){
-          userMap[u.id] = u
-        })
-        var g = resp[0]
-        g.owner = userMap[g.ownerId]
-        g.involved = []
-        resp[1].forEach(function(m){
-          if(m.groupId == g.id){
-            m.user = userMap[m.userId]
-            g.involved.push(m)
-          }
-        })
-        this.$store.commit('groups/updateGroup', g)
+        var group = response.body
+        this.$store.commit('groups/updateGroup', group)
       }, response => {
         this.$store.commit('groups/deleteGroup', groupId)
       })
@@ -252,13 +190,13 @@ export default {
     }
     this.$nextTick(function(){
       this.$store.commit('ui/setIsMobile', this.isMobile)
-      this.$store.commit('ui/setMainContainerInnerWidth', this.mainContainerWidth)
+      this.$store.commit('ui/setMainContainerInnerWidth', this.mainContainerInnerWidth)
       this.$store.commit('ui/setMainContainerLeft', this.mainContainerLeft)
     })
     window.addEventListener('resize', this.handleResize)
     if(this.token){
       Vue.http.headers.common['Authorization'] = this.token
-      this.initApp()
+      this.requestGroups()
     }
   },
   beforeDestroy () {
@@ -274,7 +212,7 @@ export default {
 
 .sidebar-container {
   position: fixed;
-  top: 52px;
+  top: 0px;
   height: 100%;
   overflow: auto;
   background-color: #f5f5f5;
@@ -282,7 +220,7 @@ export default {
 
 .main-container {
   position: fixed;
-  top: 52px;
+  top: 0px;
   right: 0px;
   height: 100%;
   overflow: auto;
@@ -290,14 +228,11 @@ export default {
 }
 
 .main-view {
-  padding-top: 20px;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-bottom: 200px;
+
 }
 
 .my-sidebar {
-  padding-top: 20px;
+  padding-top: 5px;
   padding-left: 20px;
   padding-bottom: 20px;
 }
@@ -305,4 +240,27 @@ export default {
 .clickable {
   cursor: pointer;
 }
+
+.desktop-header {
+  height: 50px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.mobile-header {
+  height: 40px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.common-header {
+  position: fixed;
+  top: 0px;
+  background-color: white;
+  z-index: 1;
+  min-width: 300px;
+  box-shadow: 0 2px 0 0 #f5f5f5;
+}
+
+
 </style>

@@ -1,11 +1,10 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import MyHome from '@/components/MyHome'
-import ChildrenSection from '@/components/children/ChildrenSection'
+import MyUser from '@/components/MyUser'
+import AddGroup from '@/components/AddGroup'
 import ChildPage from '@/components/children/ChildPage'
-import GroupsSection from '@/components/groups/GroupsSection'
 import GroupPage from '@/components/groups/GroupPage'
-import PublicGroupsSection from '@/components/groups/PublicGroupsSection'
+import PublicGroups from '@/components/groups/PublicGroups'
 
 Vue.use(Router)
 
@@ -13,33 +12,23 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'MyHome',
-      component: MyHome
+      name: 'PublicGroups',
+      component: PublicGroups
     },
     {
-      path: '/children',
-      name: 'ChildrenSection',
-      component: ChildrenSection
+      path: '/user',
+      name: 'MyUser',
+      component: MyUser
     },
     {
-      path: '/children/:childId',
-      name: 'ChildPage',
-      component: ChildPage
+      path: '/add_group',
+      name: 'AddGroup',
+      component: AddGroup
     },
     {
-      path: '/groups',
-      name: 'GroupsSection',
-      component: GroupsSection
-    },
-    {
-      path: '/groups/:groupId',
+      path: '/group/:groupId',
       name: 'GroupPage',
       component: GroupPage
-    },
-    {
-      path: '/public_groups',
-      name: 'PublicGroupsSection',
-      component: PublicGroupsSection
     }
   ]
 })

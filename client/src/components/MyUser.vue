@@ -1,5 +1,5 @@
 <template>
-  <div v-if="group">
+  <div>
     <div class="common-header level is-mobile"
       :class="{'mobile-header': isMobile, 'desktop-header': !isMobile}"
       :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px'}">
@@ -10,57 +10,50 @@
             <v-icon name="ellipsis-v"/>
           </span>
         </a>
-        <div class="has-text-weight-bold level-item clickable"
-          :class="{'is-size-4': !isMobile, 'is-size-5': isMobile}"
-          @click="showGroupDetail=false">
-          {{group.name}}
+        <div class="has-text-weight-bold level-item" :class="{'is-size-4': !isMobile, 'is-size-5': isMobile}">
+          User Profile
         </div>
-      </div>
-      <div class="level-right">
-        <a class="level-item" :class="{'has-text-grey': showGroupDetail, 'has-text-grey-light': !showGroupDetail}"
-          @click="showGroupDetail=!showGroupDetail">
-          <span class="icon">
-            <v-icon name="cog"/>
-          </span>
-        </a>
       </div>
     </div>
 
-    <div>
-      <div v-if="showGroupDetail">
-        <group-detail></group-detail>
+    <div :class="{'mobile-body': isMobile, 'desktop-body': !isMobile}">
+      <div class="field">
+        <label class="label">Email</label>
+        <p class="control">
+          <input class="input is-static" type="text" v-model="email">
+        </p>
       </div>
-      <div v-else>
-        
+      <div class="field">
+        <label class="label">Full Name</label>
+        <p class="control">
+          <input class="input is-static" type="text" v-model="fullName">
+        </p>
+      </div>
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-danger" @click="signOut">Sign Out</button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import GroupDetail from './GroupDetail'
-import Chats from './Chats'
+import Vue from 'vue'
 
 export default {
-  name: 'group-page',
-  components: {
-    GroupDetail,
-    Chats
-  },
+  name: 'my-user',
   data () {
     return {
-      waiting: false,
-      error: '',
-      showGroupDetail: false,
-      dropdownOpen: false
+      msg: 'Hello world!'
     }
   },
   computed: {
-    groupId () {
-      return this.$route.params.groupId
+    email () {
+      return this.$store.state.user.email
     },
-    group () {
-      return this.$store.state.groups.groups[this.groupId]
+    fullName () {
+      return this.$store.state.user.fullName
     },
     isMobile () {
       return this.$store.state.ui.isMobile
@@ -76,6 +69,10 @@ export default {
     }
   },
   methods: {
+    signOut () {
+      delete Vue.http.headers.common['Authorization']
+      this.$store.commit('user/reset')
+    },
     toggleSidebar () {
       this.$store.commit('ui/toggleSidebar')
     },
@@ -85,6 +82,13 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+.desktop-body {
+  margin-top: 50px;
+  padding: 20px;
+}
 
-
+.mobile-body {
+  margin-top: 40px;
+  padding: 10px;
+}
 </style>

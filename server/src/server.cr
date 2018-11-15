@@ -36,36 +36,20 @@ module MyServer
         HttpAPI::UserController.get_auth_token(env)
       end
 
-      get "/guardian_get_children" do |env|
-        HttpAPI::GuardianController.guardian_get_children(env)
-      end
-
-      post "/guardian_add_child" do |env|
-        HttpAPI::GuardianController.guardian_add_child(env)
-      end
-
-      get "/guardian_get_child/:child_id" do |env|
-        HttpAPI::GuardianController.guardian_get_child(env)
-      end
-
-      post "/guardian_update_child/:child_id" do |env|
-        HttpAPI::GuardianController.guardian_update_child(env)
-      end
-
-      post "/guardian_delete_child/:child_id" do |env|
-        HttpAPI::GuardianController.guardian_delete_child(env)
-      end
-
-      post "/guardian_remove_guardian/:guardian_id" do |env|
-        HttpAPI::GuardianController.guardian_remove_guardian(env)
-      end
-
       get "/get_groups" do |env|
         HttpAPI::GroupController.get_groups(env)
       end
 
+      get "/get_public_groups" do |env|
+        HttpAPI::GroupController.get_public_groups(env)
+      end
+
       get "/get_group/:group_id" do |env|
         HttpAPI::GroupController.get_group(env)
+      end
+
+      get "/get_group_detail/:group_id" do |env|
+        HttpAPI::GroupController.get_group_detail(env)
       end
 
       post "/add_group" do |env|
@@ -80,24 +64,12 @@ module MyServer
         HttpAPI::GroupController.delete_group(env)
       end
 
-      get "/get_group_members/:group_id" do |env|
-        HttpAPI::GroupController.get_group_members(env)
+      post "/join_group/:group_id" do |env|
+        HttpAPI::GroupController.join_group(env)
       end
 
-      post "/update_group_membership/:membership_id" do |env|
-        HttpAPI::GroupController.update_group_membership(env)
-      end
-
-      post "/delete_group_membership/:membership_id" do |env|
-        HttpAPI::GroupController.delete_group_membership(env)
-      end
-
-      get "/get_public_groups" do |env|
-        HttpAPI::GroupController.get_public_groups(env)
-      end
-
-      post "/enroll_group/:group_id" do |env|
-        HttpAPI::GroupController.enroll_group(env)
+      post "/quit_group/:group_id" do |env|
+        HttpAPI::GroupController.quit_group(env)
       end
 
       get "/get_group_chats/:group_id" do |env|

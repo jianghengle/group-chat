@@ -11,7 +11,7 @@ module MyServer
           user = verify_token(ctx)
           group_id = get_param!(ctx, "group_id").to_i
           group = Group.get_group_by_id(group_id)
-          user_ids = Membership.get_group_related_user_ids(group)
+          user_ids = [] of String
           raise "not in the group" unless user_ids.includes? (user.id.to_s)
 
           chats = Chat.get_chats_by_group(group)
@@ -55,7 +55,7 @@ module MyServer
 
           group_id = chat.group_id
           group = Group.get_group_by_id(group_id)
-          user_ids = Membership.get_group_related_user_ids(group)
+          user_ids = [] of String
           raise "not in the group" unless user_ids.includes? (user.id.to_s)
 
           sender = User.get_user_by_id(chat.user_id)
@@ -72,7 +72,7 @@ module MyServer
           user = verify_token(ctx)
           group_id = get_param!(ctx, "group_id").to_i
           group = Group.get_group_by_id(group_id)
-          user_ids = Membership.get_group_related_user_ids(group)
+          user_ids = [] of String
           raise "not in the group" unless user_ids.includes? (user.id.to_s)
 
           message = get_param!(ctx, "message")
@@ -92,7 +92,7 @@ module MyServer
           user = verify_token(ctx)
           group_id = get_param!(ctx, "group_id").to_i
           group = Group.get_group_by_id(group_id)
-          user_ids = Membership.get_group_related_user_ids(group)
+          user_ids = [] of String
           raise "not in the group" unless user_ids.includes? (user.id.to_s)
 
           chat_id = Chat.add_group_chat_with_file(user, group, ctx)

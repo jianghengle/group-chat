@@ -2,39 +2,50 @@
   <div>
     <aside class="menu">
       <ul class="menu-list">
-        <li><a :class="{'is-active': routePath=='/'}" @click="switchRoute('/')">Home</a></li>
         <li>
-          <div>
-            <a :class="{'is-active': routePath=='/children'}" @click="switchRoute('/children')">
-              <span class="icon is-small plus-button" @click="openAddChildModal">
-                <v-icon name="plus-circle"/>
-              </span>
-              <span>My Children</span>
-           </a>
-          </div>
-          <ul>
-            <li v-for="c in children" :key="'nav-child-'+c.childId">
-              <a :class="{'is-active': routePath=='/children/' + c.childId}" @click="switchRoute('/children/' + c.childId)">{{c.child.firstName}}</a>
-            </li>
-          </ul>
+          <a :class="{'is-active': routePath=='/user'}" @click="switchRoute('/user')">
+            <span class="icon">
+              <v-icon name="user"/>
+            </span>
+            {{fullName}}
+          </a>
+        </li>
+        <li>
+          <a :class="{'is-active': routePath=='/'}" @click="switchRoute('/')">
+            <span class="icon">
+              <v-icon name="search"/>
+            </span>
+            Search Groups
+          </a>
         </li>
         <li>
           <div>
-            <a :class="{'is-active': routePath=='/groups'}" @click="switchRoute('/groups')">
-              <span class="icon is-small plus-button" @click="openAddGroupModal">
-                <v-icon name="plus-circle"/>
+            <a :class="{'is-active': routePath=='/add_group'}" @click="switchRoute('/add_group')">
+              <span>
+                <span class="icon">
+                  <v-icon name="user-friends"/>
+                </span>
+                My Groups
+                <span class="icon">
+                  <v-icon name="plus" class="plus-icon"/>
+                </span>
               </span>
-              <span>My Activities</span>
            </a>
           </div>
-          <ul>
+          <ul v-if="groups.length" class="sub-menu">
             <li v-for="g in groups" :key="'nav-group-'+g.id">
-              <a :class="{'is-active': routePath=='/groups/' + g.id}" @click="switchRoute('/groups/' + g.id)">{{g.name}}</a>
+              <a :class="{'is-active': routePath=='/group/' + g.id}" @click="switchRoute('/group/' + g.id)">{{g.name}}</a>
             </li>
           </ul>
         </li>
-        <li><a :class="{'is-active': routePath=='/public_groups'}" @click="switchRoute('/public_groups')">Search Activities</a></li>
-        <li><a>Direct Messages</a></li>
+        <li>
+          <a>
+            <span class="icon">
+              <v-icon name="comments"/>
+            </span>
+            Direct Messages
+          </a>
+        </li>
       </ul>
     </aside>
   </div>
@@ -53,10 +64,8 @@ export default {
     }
   },
   computed: {
-    children () {
-      return Object.values(this.$store.state.children.children).filter(function(c){
-        return c
-      })
+    fullName () {
+      return this.$store.state.user.fullName
     },
     routePath () {
       return this.$route.path
@@ -71,24 +80,17 @@ export default {
     }
   },
   methods: {
-    openAddChildModal (event) {
-      event.preventDefault()
-      event.stopPropagation()
-      this.$store.commit('modals/openAddChildModal')
-    },
     switchRoute (route) {
       if(this.isMobile){
-        this.$store.commit('ui/setShowSidebar', false)
+        this.closeSidebar()
       }
       if(this.routePath != route){
         this.$router.push(route)
       }
     },
-    openAddGroupModal (event) {
-      event.preventDefault()
-      event.stopPropagation()
-      this.$store.commit('modals/openAddGroupModal')
-    },
+    closeSidebar () {
+      this.$store.commit('ui/setShowSidebar', false)
+    }
   }
 }
 </script>
@@ -96,19 +98,21 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
 
-.sidebar-section {
-  margin-bottom: 15px;
+.plus-icon {
+  height: 12px;
 }
 
-.sidebar-item {
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.plus-button {
+.close-button {
   float: right;
   position: relative;
-  top: 2px;
+  top: -20px;
+  right: 10px;
+}
+
+.sub-menu {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 25px;
 }
 
 </style>

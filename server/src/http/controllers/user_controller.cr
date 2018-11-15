@@ -12,7 +12,6 @@ module MyServer
           password = get_param!(ctx, "password")
 
           user = User.get_user(email, password)
-          raise "user status invalid" unless user.status.to_s == "active"
           user.to_json(true)
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")

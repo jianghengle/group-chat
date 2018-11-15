@@ -8,28 +8,19 @@ export const state = {
 // mutations
 export const mutations = {
 
-  setGroups (state, groups) {
+  setGroups (state, gs) {
+    var groups = {}
+    gs.forEach(function(g){
+      groups[g.id] = g
+    })
     state.groups = groups
   },
 
-  addGroup (state, group) {
-    Vue.set(state.groups, group.id, group)
-  },
-
-  updateGroup (state, group) {
-    if(state.groups[group.id]){
-      var g = state.groups[group.id]
-      g.name = group.name
-      g.category = group.category
-      g.description = group.description
-      g.capacity = group.capacity
-      g.access = group.access
-      g.enroll = group.enroll
-      g.ownerId = group.ownerId
-      g.owner = group.owner
-      g.involved = group.involved
+  updateGroup (state, g) {
+    if(state.groups[g.id]){
+      state.groups[g.id] = g
     }else{
-      Vue.set(state.groups, group.id, group)
+      Vue.set(state.groups, g.id, g)
     }
   },
 

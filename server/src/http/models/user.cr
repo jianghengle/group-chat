@@ -6,9 +6,7 @@ module MyServer
         field :encrypted_password, String
         field :auth_token, String
         field :role, String
-        field :first_name, String
-        field :last_name, String
-        field :status, String
+        field :full_name, String
       end
 
       def to_json(with_token = false)
@@ -17,9 +15,7 @@ module MyServer
           str << "\"id\":" << @id << ","
           str << "\"token\":" << @auth_token.to_json << "," if with_token
           str << "\"email\":" << @email.to_json << ","
-          str << "\"firstName\":" << @first_name.to_json << ","
-          str << "\"lastName\":" << @last_name.to_json << ","
-          str << "\"status\":" << @status.to_json
+          str << "\"fullName\":" << @full_name.to_json
           str << "}"
         end
       end
