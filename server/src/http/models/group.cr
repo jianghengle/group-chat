@@ -25,6 +25,21 @@ module MyServer
         end
       end
 
+      def to_json_with_user_timestamp(user_timestamp)
+        String.build do |str|
+          str << "{"
+          str << "\"id\":" << @id << ","
+          str << "\"name\":" << @name.to_json << ","
+          str << "\"category\":" << @category.to_json << ","
+          str << "\"description\":" << @description.to_json << ","
+          str << "\"status\":" << @status.to_json << ","
+          str << "\"ownerId\":" << @owner_id.to_json << ","
+          str << "\"userTimestamp\":" << user_timestamp.to_json << ","
+          str << "\"timestamp\":" << @timestamp.to_json
+          str << "}"
+        end
+      end
+
       def self.get_group_by_id(id)
         group = Repo.get(Group, id)
         raise "Cannot find group" if group.nil?
@@ -34,13 +49,6 @@ module MyServer
       def self.get_groups_by_ids(ids)
         return [] of Group if ids.empty?
         query = Query.where(:id, ids)
-        items = Repo.all(Group, query)
-        return [] of Group if items.nil?
-        items.as(Array)
-      end
-
-      def self.get_owned_groups(user)
-        query = Query.where(owner_id: user.id)
         items = Repo.all(Group, query)
         return [] of Group if items.nil?
         items.as(Array)
@@ -75,6 +83,20 @@ module MyServer
       def self.delete_group(group)
         changeset = Repo.delete(group)
         raise changeset.errors.to_s unless changeset.valid?
+      end
+
+      def self.update_timestamp(group, chat)
+        chat_timestamp = chat.timestamp
+        return if chat_timestamp.nil?
+        chat_timestamp = chat_timestamp.to_i64
+        timestamp = group.timestamp
+        if timestamp.nil?
+          group.timestamp = chat_timestamp
+        else
+          timestamp = timestamp.to_i64
+          group.timestamp = chat_timestamp if timestamp < chat_timestamp
+        end
+        Repo.update(group)
       end
     end
   end

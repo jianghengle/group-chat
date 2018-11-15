@@ -119,6 +119,7 @@ export default {
     userSignedIn () {
       this.$nextTick(function(){
         this.requestGroups()
+        this.connectWebSocket()
       })
     },
     requestGroups () {
@@ -130,11 +131,14 @@ export default {
       })
     },
     connectWebSocket () {
+      this.$store.commit('user/setWebSocket', 'Connecting...')
       var vm = this
       var url = xWEBSOCKETx + '/?token=' +this.token
       this.ws = new WebSocket(url)
       this.ws.onopen = function () {
         console.log('ws opened')
+        vm.requestGroups()
+        vm.$store.commit('user/setWebSocket', 'Connected')
       }
       this.ws.onmessage = function (evt) {
         var msg = evt.data
@@ -156,30 +160,10 @@ export default {
         var group = response.body
         this.$store.commit('groups/updateGroup', group)
       }, response => {
-        this.$store.commit('groups/deleteGroup', groupId)
-      })
-    },
-    pullChat (chatId) {
-      this.$http.get(xHTTPx + '/get_group_chat/' + chatId).then(response => {
-        var resp = response.body
-        var c = resp[0]
-        c.user = resp[1]
-        var d = new Date(c.timestamp)
-        c.timeLabel = DateForm(d, 'h:MM TT mmm d')
-        if(c.attachmentKey && c.filename){
-          c.downloadLink = xHTTPx + /download_attachment/ + c.attachmentKey
-          var ext = c.filename.includes('.') ? c.filename.split('.').pop().toLowerCase() : ''
-          var imageExts = ['png', 'jpg', 'jpeg', 'gif', 'bmp']
-          var videoExts = ['mp4', 'webm', 'ogg']
-          if(imageExts.includes(ext)){
-            c.fileType = 'image'
-          }else if(videoExts.includes(ext)){
-            c.fileType = 'video'
-          }else{
-            c.fileType = 'other'
-          }
+        if(this.routePath == '/group/' + groupId){
+          this.$router.push('/')
         }
-        this.$store.commit('groups/pushGroupChat',  {groupId: c.groupId, chat: c})
+        this.$store.commit('groups/deleteGroup', groupId)
       })
     },
   },
@@ -197,6 +181,7 @@ export default {
     if(this.token){
       Vue.http.headers.common['Authorization'] = this.token
       this.requestGroups()
+      this.connectWebSocket()
     }
   },
   beforeDestroy () {

@@ -17,6 +17,9 @@
         </div>
       </div>
       <div class="level-right">
+        <div class="level-item has-text-grey is-size-7" v-if="webSocket != 'Connected'">
+          {{webSocket}}
+        </div>
         <a class="level-item" :class="{'has-text-grey': showGroupDetail, 'has-text-grey-light': !showGroupDetail}"
           @click="showGroupDetail=!showGroupDetail">
           <span class="icon">
@@ -31,7 +34,7 @@
         <group-detail></group-detail>
       </div>
       <div v-else>
-        
+        <chats></chats>
       </div>
     </div>
   </div>
@@ -73,6 +76,9 @@ export default {
     },
     showSidebar () {
       return this.$store.state.ui.showSidebar
+    },
+    webSocket () {
+      return this.$store.state.user.webSocket
     }
   },
   methods: {

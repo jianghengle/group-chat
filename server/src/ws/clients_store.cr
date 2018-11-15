@@ -44,6 +44,15 @@ module MyServer
           end
         end
       end
+
+      def self.pull_group(group_id, user_ids = [] of String)
+        if user_ids.empty?
+          memberships = MyServer::HttpAPI::Membership.get_memberships_by_group_id(group_id)
+          user_ids = memberships.map { |m| m.user_id.to_s }
+        end
+        message = ["pullGroup", group_id.to_s].to_json
+        MyServer::WS::ClientStore.broadcast_message(user_ids, message)
+      end
     end
   end
 end

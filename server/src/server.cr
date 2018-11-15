@@ -72,20 +72,24 @@ module MyServer
         HttpAPI::GroupController.quit_group(env)
       end
 
-      get "/get_group_chats/:group_id" do |env|
-        HttpAPI::ChatController.get_group_chats(env)
+      get "/get_latest_chats/:group_id" do |env|
+        HttpAPI::ChatController.get_latest_chats(env)
       end
 
-      get "/get_group_chat/:chat_id" do |env|
-        HttpAPI::ChatController.get_group_chat(env)
+      get "/get_chats_since/:group_id/:timestamp" do |env|
+        HttpAPI::ChatController.get_chats_since(env)
       end
 
-      post "/add_group_chat/:group_id" do |env|
-        HttpAPI::ChatController.add_group_chat(env)
+      get "/get_chats_before/:group_id/:timestamp" do |env|
+        HttpAPI::ChatController.get_chats_before(env)
       end
 
-      post "/add_group_chat_with_file/:group_id" do |env|
-        HttpAPI::ChatController.add_group_chat_with_file(env)
+      post "/add_chat/:group_id" do |env|
+        HttpAPI::ChatController.add_chat(env)
+      end
+
+      post "/add_chat_with_file/:group_id" do |env|
+        HttpAPI::ChatController.add_chat_with_file(env)
       end
 
       get "/download_attachment/:key" do |env|

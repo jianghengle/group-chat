@@ -73,13 +73,16 @@ export default {
       this.$store.commit('modals/closeUploadFileModal')
     },
     uploadFile () {
+      if(this.waiting)
+        return
+      this.waiting = true
       var formData = new FormData()
-      formData.append('message', this.message)
+      formData.append('message', JSON.stringify(this.message))
       if(this.file){
         formData.append('file', this.file)
       }
 
-      this.$http.post(xHTTPx + '/add_group_chat_with_file/' + this.groupId, formData).then(response => {
+      this.$http.post(xHTTPx + '/add_chat_with_file/' + this.groupId, formData).then(response => {
         this.waiting = false
         this.error = ''
         this.close()

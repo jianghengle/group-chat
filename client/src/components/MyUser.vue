@@ -14,6 +14,11 @@
           User Profile
         </div>
       </div>
+      <div class="level-right">
+        <div class="level-item has-text-grey is-size-7" v-if="webSocket != 'Connected'">
+          {{webSocket}}
+        </div>
+      </div>
     </div>
 
     <div :class="{'mobile-body': isMobile, 'desktop-body': !isMobile}">
@@ -66,6 +71,9 @@ export default {
     },
     showSidebar () {
       return this.$store.state.ui.showSidebar
+    },
+    webSocket () {
+      return this.$store.state.user.webSocket
     }
   },
   methods: {

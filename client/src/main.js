@@ -30,6 +30,8 @@ import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/times'
 import 'vue-awesome/icons/ellipsis-v'
 import 'vue-awesome/icons/cog'
+import 'vue-awesome/icons/comment-dots'
+import 'vue-awesome/icons/angle-double-up'
 import Icon from 'vue-awesome/components/Icon'
 
 Vue.component('v-icon', Icon)

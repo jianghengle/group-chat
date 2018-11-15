@@ -70,6 +70,22 @@ module MyServer
         changeset = Repo.delete(membership)
         raise changeset.errors.to_s unless changeset.valid?
       end
+
+      def self.update_timestamp(membership, chats)
+        chat = chats.first?
+        return if chat.nil? || chat.timestamp.nil?
+        chat_timestamp = chat.timestamp
+        return if chat_timestamp.nil?
+        chat_timestamp = chat_timestamp.to_i64
+        timestamp = membership.timestamp
+        if timestamp.nil?
+          membership.timestamp = chat_timestamp
+        else
+          timestamp = timestamp.to_i64
+          membership.timestamp = chat_timestamp if timestamp < chat_timestamp
+        end
+        Repo.update(membership)
+      end
     end
   end
 end

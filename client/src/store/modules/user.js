@@ -3,7 +3,8 @@ export const state = {
   email: localStorage.getItem('email'),
   token: localStorage.getItem('token'),
   fullName: localStorage.getItem('fullName'),
-  userId: localStorage.getItem('userId')
+  userId: localStorage.getItem('userId'),
+  webSocket: ''
 }
 
 // mutations
@@ -34,6 +35,10 @@ export const mutations = {
     localStorage.removeItem('token')
     localStorage.removeItem('fullName')
     localStorage.removeItem('userId')
+  },
+
+  setWebSocket (state, status) {
+    state.webSocket = status
   }
 }
 

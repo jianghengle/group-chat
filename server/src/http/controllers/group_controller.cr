@@ -9,12 +9,17 @@ module MyServer
       def get_groups(ctx)
         begin
           user = verify_token(ctx)
-          owned_groups = Group.get_owned_groups(user)
           memberships = Membership.get_memberships_by_user_id(user.id)
           group_ids = memberships.map { |m| m.group_id }
           groups = Group.get_groups_by_ids(group_ids)
-          groups = groups | owned_groups
-          "[" + groups.join(", ") { |g| g.to_json } + "]"
+          timestamp_map = {} of String => String
+          memberships.each do |m|
+            timestamp_map[m.group_id.to_s] = m.timestamp.to_s
+          end
+          groups_json = groups.join(", ") do |g|
+            g.to_json_with_user_timestamp(timestamp_map[g.id.to_s])
+          end
+          "[" + groups_json + "]"
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
         rescue e : Exception
@@ -52,8 +57,8 @@ module MyServer
           group_id = get_param!(ctx, "group_id").to_i
           group = Group.get_group_by_id(group_id)
           membership = Membership.get_membership_by_group_id_user_id(group_id, user.id)
-          raise "cannot get group" if ((group.owner_id != user.id) && membership.nil?)
-          group.to_json
+          raise "cannot get group" if membership.nil?
+          group.to_json_with_user_timestamp(membership.timestamp)
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
         rescue e : Exception
@@ -67,9 +72,8 @@ module MyServer
         group = Group.get_group_by_id(group_id)
         memberships = Membership.get_memberships_by_group_id(group_id)
         user_ids = memberships.map { |m| m.user_id }
-        raise "cannot get group" unless ((group.owner_id == user.id) || user_ids.includes?(user.id))
+        raise "cannot get group" unless user_ids.includes?(user.id)
 
-        user_ids << group.owner_id
         users = User.get_users_by_ids(user_ids)
         users_json = "[" + users.join(", ") { |u| u.to_json } + "]"
         "[#{group.to_json}, #{users_json}]"
@@ -85,7 +89,8 @@ module MyServer
           group.status = get_param!(ctx, "status")
           group.owner_id = user.id
           group = Group.add_group(group)
-          group.to_json
+          Membership.add_membership(group.id, user.id)
+          group.to_json_with_user_timestamp("")
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
         rescue e : Exception
@@ -104,10 +109,7 @@ module MyServer
           group.description = get_param!(ctx, "description")
           group.status = get_param!(ctx, "status")
           Group.update_group(group)
-          memberships = Membership.get_memberships_by_group_id(group_id)
-          user_ids = memberships.map { |m| m.user_id.to_s }
-          message = ["pullGroup", group_id.to_s].to_json
-          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
+          MyServer::WS::ClientStore.pull_group(group_id)
           group.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
@@ -125,10 +127,9 @@ module MyServer
 
           memberships = Membership.get_memberships_by_group_id(group_id)
           user_ids = memberships.map { |m| m.user_id.to_s }
-          message = ["pullGroup", group_id.to_s].to_json
           Membership.delete_memberships_by_group_id(group_id)
           Group.delete_group(group)
-          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
+          MyServer::WS::ClientStore.pull_group(group_id, user_ids)
           {ok: true}.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
@@ -163,11 +164,10 @@ module MyServer
           user_id = get_param!(ctx, "userId").to_i
           membership = Membership.get_membership_by_group_id_user_id(group_id, user_id)
           raise "not a member" if membership.nil?
+          raise "cannot quit owner" if group.owner_id == user_id
           raise "cannot quit" unless (group.owner_id == user.id || membership.user_id == user.id)
           Membership.delete_membership(membership)
-          user_ids = [user_id.to_s]
-          message = ["pullGroup", group_id.to_s].to_json
-          MyServer::WS::ClientStore.broadcast_message(user_ids, message)
+          MyServer::WS::ClientStore.pull_group(group_id, [user_id.to_s])
           {ok: true}.to_json
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")

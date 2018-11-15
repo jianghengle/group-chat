@@ -24,7 +24,7 @@ module MyServer
         attachment.key = Random::Secure.urlsafe_base64(32).to_s
         HTTP::FormData.parse(env.request) do |part|
           if part.name == "message"
-            message = part.body.gets_to_end
+            message = JSON.parse(part.body.gets_to_end).to_s
           elsif part.name == "file"
             raise "No static dir setup" unless ENV.has_key?("GROUP_CHAT_FILES")
             data_dir = ENV["GROUP_CHAT_FILES"]
@@ -61,12 +61,12 @@ module MyServer
       end
 
       def self.get_attachment_map(keys)
-        result = {} of String => Attachment
+        result = {} of String => String
         query = Query.where(:key, keys)
         items = Repo.all(Attachment, query)
         return result if items.nil?
         items.as(Array).each do |i|
-          result[i.key.to_s] = i
+          result[i.key.to_s] = i.filename.to_s
         end
         result
       end

@@ -68,7 +68,7 @@
               <tbody>
                 <tr>
                   <td>1</td>
-                  <td>{{group.owner.fullName}}</td>
+                  <td>{{group.owner.fullName}} <span v-if="group.ownerId == userId">(Me)</span></td>
                   <td>Owner</td>
                   <td></td>
                 </tr>
