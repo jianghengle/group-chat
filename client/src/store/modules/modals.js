@@ -10,6 +10,7 @@ export const state = {
   },
   addGroupModal: {opened: false},
   uploadFileModal: {opened: false, message: ''},
+  imageModal: {opened: false, source: ''},
 }
 
 // mutations
@@ -56,6 +57,16 @@ export const mutations = {
     state.uploadFileModal.message = ''
     state.uploadFileModal.opened = false
   },
+
+  openImageModal (state, source) {
+    state.imageModal.source = source
+    state.imageModal.opened = true
+  },
+
+  closeImageModal (state) {
+    state.imageModal.source = ''
+    state.imageModal.opened = false
+  }
 }
 
 export default {

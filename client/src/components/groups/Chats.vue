@@ -10,13 +10,13 @@
       {{error}}
     </div>
 
-    <div class="chats-container" :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px', 'padding': padding, 'top': chatsContainerTop, 'bottom': chatsContainerBottom}">
+    <div class="chats-container" :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px', 'padding': chatContainerPadding, 'top': chatsContainerTop, 'bottom': chatsContainerBottom}">
       <div class="has-text-centered" v-if="oldestTimestamp">
-        <a class="button is-text load-more-button has-text-grey" @click="loadOldChats" v-if="!loadedAll">
-          <v-icon name="angle-double-up"></v-icon>
+        <a class="button is-white load-more-button has-text-grey is-rounded" @click="loadOldChats" v-if="!loadedAll">
+          <small>Load more</small>
         </a>
-        <a class="button is-white load-more-button has-text-grey" v-else>
-          <small>Got the oldest point ...</small>
+        <a class="button is-white load-more-button has-text-grey is-rounded" v-else>
+          <small>Got the oldest point</small>
         </a>
       </div>
 
@@ -35,7 +35,7 @@
                   <strong>{{c.user.fullName}}</strong> <small>@{{c.timeLabel}}</small><br>
                   <span class="chat-message">{{c.message}}</span><br>
                   <span v-if="c.downloadLink">
-                    <span v-if="c.fileType=='image'"><img class="chat-image" :src="c.downloadLink"/></span>
+                    <span v-if="c.fileType=='image'"><img class="chat-image clickable" :src="c.downloadLink" @click="openImageModal(c.downloadLink)" /></span>
                     <span>
                       <video v-if="c.fileType=='video'" class="chat-video" controls>
                         <source :src="c.downloadLink">
@@ -53,13 +53,14 @@
           </article>
         </div>
       </div>
+
     </div>
         
-    <div class="input-container" :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px', 'padding': padding}">
+    <div class="input-container" :style="{'left': mainContainerLeft+'px', 'width': mainContainerInnerWidth+'px', 'padding': inputContainerPadding}">
       <div class="field">
         <p class="control has-icons-left">
-          <input class="input" type="text" placeholder="Message" v-model="message" @keyup.enter="sendMessage">
-          <span class="icon is-small is-left clickable plus-button" @click="openUploadModal">
+          <textarea id="chat-input-textarea" class="textarea my-text-input" placeholder="Message" v-model="message" @keyup.enter="sendMessage"></textarea>
+          <span class="icon is-small is-left clickable plus-button has-text-grey-light" @click="openUploadModal">
             <v-icon name="plus"></v-icon>
           </span>
         </p>
@@ -96,10 +97,20 @@ export default {
     mainContainerLeft () {
       return this.$store.state.ui.mainContainerLeft
     },
-    mainContainerWidth () {
+    mainContainerInnerWidth () {
       return this.$store.state.ui.mainContainerInnerWidth
     },
-    padding () {
+    mainContainerWidth () {
+      return this.$store.state.ui.mainContainerWidth
+    },
+    chatContainerPadding () {
+      var extra = this.mainContainerWidth - this.mainContainerInnerWidth
+      var paddingRight = this.isMobile ? (6 + extra) : (15 + extra)
+      var mobilePadding = "5px " + (6 + extra) + "px 5px 6px"
+      var desktopPadding = "10px " + (15 + extra) + "px 15px 15px"
+      return this.isMobile ? mobilePadding : desktopPadding
+    },
+    inputContainerPadding () {
       return this.isMobile ? "5px 6px 5px 6px" : "10px 15px 15px 15px"
     },
     chatsContainerTop () {
@@ -158,6 +169,17 @@ export default {
       //   if(elmnt)
       //     elmnt.scrollIntoView({ behavior: 'smooth'})
       // })
+    },
+    message: function (val) {
+      var el = document.getElementById('chat-input-textarea')
+      el.style.height = "1px"
+      this.$nextTick(function(){
+        if(el.scrollHeight <= 34){
+          el.style.height = "2.25em"
+        }else{
+          el.style.height = (10 + el.scrollHeight) + "px"
+        }
+      })
     }
   },
   methods: {
@@ -204,9 +226,9 @@ export default {
       })
     },
     sendMessage () {
-      if(!this.message.trim())
+      if(!this.message)
         return
-      this.$http.post(xHTTPx + '/add_chat/' + this.groupId, {message: this.message.trim()}).then(response => {
+      this.$http.post(xHTTPx + '/add_chat/' + this.groupId, {message: this.message}).then(response => {
         var resp = response.body
         var chats = this.buildChats ([resp[0]], [resp[1]])
         this.$store.commit('groups/pushGroupChats', {groupId: this.groupId, chats: chats})
@@ -234,6 +256,9 @@ export default {
         this.error = 'failed to load chats'
         this.waiting = false
       })
+    },
+    openImageModal (source) {
+      this.$store.commit('modals/openImageModal', source)
     }
   },
   mounted () {
@@ -266,7 +291,7 @@ export default {
 }
 
 .chat-message {
-  white-space: pre-line;
+  white-space: pre-wrap;
 }
 
 .chat-image {
@@ -281,5 +306,13 @@ export default {
   padding-top: 0px;
   padding-bottom: 0px;
   height: 20px;
+}
+
+.my-text-input {
+  height: 2.25em;
+  min-height: 0px;
+  padding-left: 2.25em;
+  padding-top: calc(0.375em - 1px);
+  padding-bottom: calc(0.375em - 1px);
 }
 </style>

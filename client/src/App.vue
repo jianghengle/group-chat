@@ -18,6 +18,7 @@
 
     <confirm-modal></confirm-modal>
     <upload-file-modal></upload-file-modal>
+    <image-modal></image-modal>
   </div>
 </template>
 
@@ -28,6 +29,7 @@ import SignIn from './components/SignIn'
 import MySidebar from './components/MySidebar'
 import ConfirmModal from './components/modals/ConfirmModal'
 import UploadFileModal from './components/modals/UploadFileModal'
+import ImageModal from './components/modals/ImageModal'
 
 export default {
   name: 'App',
@@ -35,7 +37,8 @@ export default {
     SignIn,
     MySidebar,
     ConfirmModal,
-    UploadFileModal
+    UploadFileModal,
+    ImageModal
   },
   data () {
     return {
@@ -94,6 +97,9 @@ export default {
     },
     mainContainerLeft: function (val) {
       this.$store.commit('ui/setMainContainerLeft', val)
+    },
+    mainContainerWidth: function (val) {
+      this.$store.commit('ui/setMainContainerWidth', val)
     },
     mainContainerInnerWidth: function (val) {
       this.$store.commit('ui/setMainContainerInnerWidth', val)
