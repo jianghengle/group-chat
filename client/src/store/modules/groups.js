@@ -3,7 +3,9 @@ import Vue from 'vue'
 // initial state
 export const state = {
   groups: {},
-  chats: {}
+  chats: {},
+  lastTimestamps: {},
+  historyLoaded: {}
 }
 
 // mutations
@@ -71,7 +73,24 @@ export const mutations = {
     }else{
       state.chats[groupId] = chats
     }
-  }
+  },
+
+  setLastTimestamp (state, obj) {
+    var groupId = obj.groupId
+    var timestamp = obj.timestamp
+    if(!timestamp){
+      timestamp = state.groups[groupId].userTimestamp
+    }
+    if(state.lastTimestamps[groupId] == undefined){
+      Vue.set(state.lastTimestamps, groupId, timestamp)
+    }else{
+      state.lastTimestamps[groupId] = timestamp
+    }
+  },
+
+  setHistoryLoaded (state, groupId) {
+    Vue.set(state.historyLoaded, groupId, true)
+  },
 }
 
 export default {

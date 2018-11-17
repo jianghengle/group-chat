@@ -149,7 +149,6 @@ export default {
       this.ws.onmessage = function (evt) {
         var msg = evt.data
         var obj = JSON.parse(msg)
-        console.log('ws msg', obj)
         vm[obj[0]](obj[1])
       }
       this.ws.onclose = function () {

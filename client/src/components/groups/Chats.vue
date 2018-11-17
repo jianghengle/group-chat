@@ -12,7 +12,7 @@
 
     <div class="chats-container" :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px', 'padding': chatContainerPadding, 'top': chatsContainerTop, 'bottom': chatsContainerBottom}">
       <div class="has-text-centered" v-if="oldestTimestamp">
-        <a class="button is-white load-more-button has-text-grey is-rounded" @click="loadOldChats" v-if="!loadedAll">
+        <a class="button is-white load-more-button has-text-grey is-rounded" @click="loadOldChats" v-if="!historyLoaded">
           <small>Load more</small>
         </a>
         <a class="button is-white load-more-button has-text-grey is-rounded" v-else>
@@ -22,35 +22,7 @@
 
       <div class="chats">
         <div v-for="(c, i) in chatsAsc">
-          <hr v-if="i != 0" class="hr chat-seperator">
-          <article class="media" :id="'chat-'+c.id">
-            <figure class="media-left">
-              <p class="image is-32x32">
-                <img src="https://bulma.io/images/placeholders/128x128.png">
-              </p>
-            </figure>
-            <div class="media-content">
-              <div class="content">
-                <p>
-                  <strong>{{c.user.fullName}}</strong> <small>@{{c.timeLabel}}</small><br>
-                  <span class="chat-message">{{c.message}}</span><br>
-                  <span v-if="c.downloadLink">
-                    <span v-if="c.fileType=='image'"><img class="chat-image clickable" :src="c.downloadLink" @click="openImageModal(c.downloadLink)" /></span>
-                    <span>
-                      <video v-if="c.fileType=='video'" class="chat-video" controls>
-                        <source :src="c.downloadLink">
-                        Your browser does not support the video tag.
-                      </video>
-                    </span>
-                    <span v-if="c.fileType=='other'">
-                      <iframe :style="{'width': '90%', 'height': isMobile ? '300px' : '600px'}" :src="'https://docs.google.com/gview?url=' + c.downloadLink + '&embedded=true'"></iframe>
-                    </span>
-                    <span><br/>Download the attachment: <a :href="c.downloadLink" :download="c.filename">{{c.filename}}</a></span>
-                  </span>
-                </p>
-              </div>
-            </div>
-          </article>
+          <chat :chat0="chatsAsc[i-1]" :chat1="chatsAsc[i]"></chat>
         </div>
       </div>
 
@@ -71,17 +43,19 @@
 
 <script>
 import DateForm from 'dateformat'
-
+import Chat from './Chat'
 
 
 export default {
   name: 'chats',
+  components: {
+    Chat
+  },
   data () {
     return {
       waiting: false,
       error: '',
-      message: '',
-      loadedAll: false
+      message: ''
     }
   },
   computed: {
@@ -148,27 +122,20 @@ export default {
         return this.group.timestamp
       }
       return null
-    }
+    },
+    historyLoaded () {
+      return this.$store.state.groups.historyLoaded[this.groupId]
+    },
   },
   watch: {
     groupId: function (val) {
+      this.$store.commit('groups/setLastTimestamp', {groupId: this.groupId, timestamp: this.latestTimestamp})
       this.getChats()
     },
     groupTimestamp: function (val) {
       if(!val)
         return
       this.getChats()
-    },
-    chatsDesc: function (val) {
-      console.log(val)
-      // if(!val)
-      //   return
-      // var lastChat = val[val.length-1]
-      // this.$nextTick(function(){
-      //   var elmnt = document.getElementById("chat-"+lastChat.id)
-      //   if(elmnt)
-      //     elmnt.scrollIntoView({ behavior: 'smooth'})
-      // })
     },
     message: function (val) {
       var el = document.getElementById('chat-input-textarea')
@@ -180,7 +147,7 @@ export default {
           el.style.height = (10 + el.scrollHeight) + "px"
         }
       })
-    }
+    },
   },
   methods: {
     getChats () {
@@ -192,7 +159,15 @@ export default {
       this.$http.get(url).then(response => {
         var resp = response.body
         var chats = this.buildChats(resp[0], resp[1])
-        this.$store.commit('groups/pushGroupChats', {groupId: this.groupId, chats: chats})
+        if(chats.length && chats[0].timestamp > this.latestTimestamp){
+          if(this.latestTimestamp){
+            this.$store.commit('groups/pushGroupChats', {groupId: this.groupId, chats: chats})
+            this.$nextTick(this.scrollToLatest)
+          }else{
+            this.$store.commit('groups/pushGroupChats', {groupId: this.groupId, chats: chats})
+            setTimeout(this.scrollToLatest, 1000)
+          }
+        }
         this.waiting = false
         this.error = ''
       }, response => {
@@ -208,7 +183,7 @@ export default {
       return chats.map(function(c){
         c.user = userMap[c.userId]
         var d = new Date(c.timestamp)
-        c.timeLabel = DateForm(d, 'h:MM TT mmm d')
+        c.timeLabel = DateForm(d, 'h:MM TT')
         if(c.attachmentKey && c.filename){
           c.downloadLink = xHTTPx + /download_attachment/ + c.attachmentKey
           var ext = c.filename.includes('.') ? c.filename.split('.').pop().toLowerCase() : ''
@@ -226,13 +201,17 @@ export default {
       })
     },
     sendMessage () {
-      if(!this.message)
+      if(!this.message.trim())
         return
-      this.$http.post(xHTTPx + '/add_chat/' + this.groupId, {message: this.message}).then(response => {
+      this.$http.post(xHTTPx + '/add_chat/' + this.groupId, {message: this.message.trim()}).then(response => {
         var resp = response.body
         var chats = this.buildChats ([resp[0]], [resp[1]])
         this.$store.commit('groups/pushGroupChats', {groupId: this.groupId, chats: chats})
         this.message = ''
+        this.$nextTick(function(){
+          this.$store.commit('groups/setLastTimestamp', {groupId: this.groupId, timestamp: this.latestTimestamp})
+          this.scrollToLatest()
+        })
       },response => {
         this.error = 'Failed to send message!'
       })
@@ -246,8 +225,8 @@ export default {
       this.$http.get(url).then(response => {
         var resp = response.body
         var chats = this.buildChats(resp[0], resp[1])
-        if(chats.length < 20){
-          this.loadedAll = true
+        if(chats.length < 100){
+          this.$store.commit('groups/setHistoryLoaded', this.groupId)
         }
         this.$store.commit('groups/prependGroupChats', {groupId: this.groupId, chats: chats})
         this.waiting = false
@@ -257,11 +236,16 @@ export default {
         this.waiting = false
       })
     },
-    openImageModal (source) {
-      this.$store.commit('modals/openImageModal', source)
-    }
+    scrollToLatest () {
+      var latestChat = this.chatsDesc[0]
+      var el = document.getElementById("chat-"+latestChat.id)
+      if(el){
+        el.scrollIntoView({ behavior: 'smooth'})
+      }
+    },
   },
   mounted () {
+    this.$store.commit('groups/setLastTimestamp', {groupId: this.groupId, timestamp: this.latestTimestamp})
     this.getChats()
   }
 }
@@ -281,25 +265,8 @@ export default {
   overflow: auto;
 }
 
-.chat-seperator {
-  margin-top: 15px;
-  margin-bottom: 15px;
-}
-
 .plus-button {
   pointer-events: all!important;
-}
-
-.chat-message {
-  white-space: pre-wrap;
-}
-
-.chat-image {
-  max-width: 90%;
-}
-
-.chat-video {
-  max-width: 90%;
 }
 
 .load-more-button {

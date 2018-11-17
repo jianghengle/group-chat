@@ -27,7 +27,7 @@ module MyServer
       end
 
       def self.get_latest_chats(group_id)
-        query = Query.where(group_id: group_id).order_by("timestamp DESC").limit(20)
+        query = Query.where(group_id: group_id).order_by("timestamp DESC").limit(100)
         items = Repo.all(Chat, query)
         return [] of Chat if items.nil?
         items.as(Array)
@@ -41,7 +41,7 @@ module MyServer
       end
 
       def self.get_chats_before(group_id, timestamp)
-        query = Query.where(group_id: group_id).where("timestamp < ?", [timestamp]).order_by("timestamp DESC")
+        query = Query.where(group_id: group_id).where("timestamp < ?", [timestamp]).limit(100).order_by("timestamp DESC")
         items = Repo.all(Chat, query)
         return [] of Chat if items.nil?
         items.as(Array)
