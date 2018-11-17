@@ -34,7 +34,7 @@
           </div>
           <ul v-if="groups.length" class="sub-menu">
             <li v-for="g in groups" :key="'nav-group-'+g.id">
-              <a :class="{'is-active': routePath=='/group/' + g.id, 'has-text-weight-bold': (g.timestamp && (!g.userTimestamp || g.userTimestamp < g.timestamp))}"
+              <a :class="{'is-active': groupId==g.id, 'has-text-weight-bold': (g.timestamp && (!g.userTimestamp || g.userTimestamp < g.timestamp))}"
                 @click="switchRoute('/group/' + g.id)">{{g.name}}
                 <span class="icon" v-if="(g.timestamp && (!g.userTimestamp || g.userTimestamp < g.timestamp))">
                   <v-icon name="comment-dots"/>
@@ -74,6 +74,9 @@ export default {
     },
     routePath () {
       return this.$route.path
+    },
+    groupId () {
+      return this.$route.params.groupId
     },
     isMobile () {
       return this.$store.state.ui.isMobile

@@ -269,7 +269,7 @@ export default {
     }
   },
   mounted () {
-    this.requestGroup()
+    this.$nextTick(this.requestGroup)
   }
 }
 </script>

@@ -1,26 +1,5 @@
 <template>
   <div>
-    <div class="common-header level is-mobile"
-      :class="{'mobile-header': isMobile, 'desktop-header': !isMobile}"
-      :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px'}">
-      <div class="level-left">
-        <a class="level-item" :class="{'has-text-grey': showSidebar, 'has-text-grey-light': !showSidebar}"
-          @click="toggleSidebar">
-          <span class="icon">
-            <v-icon name="ellipsis-v"/>
-          </span>
-        </a>
-        <div class="has-text-weight-bold level-item" :class="{'is-size-4': !isMobile, 'is-size-5': isMobile}">
-          Public Groups
-        </div>
-      </div>
-      <div class="level-right">
-        <div class="level-item has-text-grey is-size-7" v-if="webSocket != 'Connected'">
-          {{webSocket}}
-        </div>
-      </div>
-    </div>
-
     <div :class="{'mobile-body': isMobile, 'desktop-body': !isMobile}">
       <div class="has-text-centered" v-if="waiting">
         <v-icon name="spinner" class="icon fa-spin"></v-icon>
@@ -34,8 +13,8 @@
         <div v-else>
           <div class="columns is-multiline">
             <div v-for="g in publicGroups" class="column is-half">
-              <div class="box">
-                <a class="button is-link join-button" v-if="!groups[g.id]" @click="joinGroup(g)">Join</a>
+              <div class="box" :class="{'clickable': groups[g.id]}" @click="groups[g.id] && openGroup(g.id)">
+                <a class="button is-link join-button" v-if="!groups[g.id]" @click.stop="joinGroup(g)">Join</a>
                 <article class="media">
                   <div class="media-content">
                     <div class="content">
@@ -77,18 +56,6 @@ export default {
     isMobile () {
       return this.$store.state.ui.isMobile
     },
-    mainContainerLeft () {
-      return this.$store.state.ui.mainContainerLeft
-    },
-    mainContainerWidth () {
-      return this.$store.state.ui.mainContainerInnerWidth
-    },
-    showSidebar () {
-      return this.$store.state.ui.showSidebar
-    },
-    webSocket () {
-      return this.$store.state.user.webSocket
-    }
   },
   methods: {
     requestPublicGroups () {
@@ -142,9 +109,6 @@ export default {
         })
       })
     },
-    toggleSidebar () {
-      this.$store.commit('ui/toggleSidebar')
-    },
   },
   mounted () {
     this.$nextTick(function(){
@@ -157,9 +121,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
-.section-header {
-  margin-bottom: 10px;
-}
 
 .join-button {
   float: right;

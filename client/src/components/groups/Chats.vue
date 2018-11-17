@@ -1,16 +1,17 @@
 <template>
   <div>
-
-    <div class="has-text-centered" v-if="waiting">
-      <v-icon name="spinner" class="icon fa-spin"></v-icon>
-    </div>
-    
-    <div v-if="error" class="notification is-danger">
-      <button class="delete" @click="error=''"></button>
-      {{error}}
-    </div>
-
     <div class="chats-container" :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px', 'padding': chatContainerPadding, 'top': chatsContainerTop, 'bottom': chatsContainerBottom}">
+
+      <div class="has-text-centered" v-if="waiting">
+        <v-icon name="spinner" class="icon fa-spin"></v-icon>
+      </div>
+
+      <div v-if="error" class="notification is-danger">
+        <button class="delete" @click="error=''"></button>
+        {{error}}
+      </div>
+
+
       <div class="has-text-centered" v-if="oldestTimestamp">
         <a class="button is-white load-more-button has-text-grey is-rounded" @click="loadOldChats" v-if="!historyLoaded">
           <small>Load more</small>
@@ -28,7 +29,7 @@
 
     </div>
         
-    <div class="input-container" :style="{'left': mainContainerLeft+'px', 'width': mainContainerInnerWidth+'px', 'padding': inputContainerPadding}">
+    <div class="input-container" :style="{'left': mainContainerLeft+'px', 'width': mainContainerInnerWidth+'px', 'padding': inputContainerPadding, 'margin-left': marginLeft+'px'}">
       <div class="field">
         <p class="control has-icons-left">
           <textarea id="chat-input-textarea" class="textarea my-text-input" placeholder="Message" v-model="message" @keyup.enter="sendMessage"></textarea>
@@ -65,6 +66,9 @@ export default {
     groupId () {
       return this.$route.params.groupId
     },
+    showSidebar () {
+      return this.$store.state.ui.showSidebar
+    },
     isMobile () {
       return this.$store.state.ui.isMobile
     },
@@ -79,9 +83,10 @@ export default {
     },
     chatContainerPadding () {
       var extra = this.mainContainerWidth - this.mainContainerInnerWidth
-      var paddingRight = this.isMobile ? (6 + extra) : (15 + extra)
-      var mobilePadding = "5px " + (6 + extra) + "px 5px 6px"
-      var desktopPadding = "10px " + (15 + extra) + "px 15px 15px"
+      var left = this.showSidebar ? 0 : (extra / 2)
+      var right = this.showSidebar ? extra : (extra / 2)
+      var mobilePadding = "5px " + (6 + right) + "px 5px " + (6 + left) + "px"
+      var desktopPadding = "10px " + (15 + right) + "px 15px " + (15 + left) + "px"
       return this.isMobile ? mobilePadding : desktopPadding
     },
     inputContainerPadding () {
@@ -92,6 +97,10 @@ export default {
     },
     chatsContainerBottom () {
       return this.isMobile ? "45px" : "43px"
+    },
+    marginLeft () {
+      var left = (this.mainContainerWidth - this.mainContainerInnerWidth) / 2
+      return this.showSidebar ? 0 : left
     },
     chatsDesc () {
       return this.$store.state.groups.chats[this.groupId]

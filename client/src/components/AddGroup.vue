@@ -1,26 +1,5 @@
 <template>
   <div>
-    <div class="common-header level is-mobile"
-      :class="{'mobile-header': isMobile, 'desktop-header': !isMobile}"
-      :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px'}">
-      <div class="level-left">
-        <a class="level-item" :class="{'has-text-grey': showSidebar, 'has-text-grey-light': !showSidebar}"
-          @click="toggleSidebar">
-          <span class="icon">
-            <v-icon name="ellipsis-v"/>
-          </span>
-        </a>
-        <div class="has-text-weight-bold level-item" :class="{'is-size-4': !isMobile, 'is-size-5': isMobile}">
-          Add Group
-        </div>
-      </div>
-      <div class="level-right">
-        <div class="level-item has-text-grey is-size-7" v-if="webSocket != 'Connected'">
-          {{webSocket}}
-        </div>
-      </div>
-    </div>
-
     <div :class="{'mobile-body': isMobile, 'desktop-body': !isMobile}">
       <div class="has-text-centered" v-if="waiting">
         <v-icon name="spinner" class="icon fa-spin"></v-icon>
@@ -82,18 +61,6 @@ export default {
   computed: {
     isMobile () {
       return this.$store.state.ui.isMobile
-    },
-    mainContainerLeft () {
-      return this.$store.state.ui.mainContainerLeft
-    },
-    mainContainerWidth () {
-      return this.$store.state.ui.mainContainerInnerWidth
-    },
-    showSidebar () {
-      return this.$store.state.ui.showSidebar
-    },
-    webSocket () {
-      return this.$store.state.user.webSocket
     }
   },
   methods: {
@@ -110,9 +77,6 @@ export default {
         this.error = 'Failed to add group!'
         this.waiting= false
       })
-    },
-    toggleSidebar () {
-      this.$store.commit('ui/toggleSidebar')
     },
   }
 }

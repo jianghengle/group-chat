@@ -8,6 +8,7 @@
       </div>
       <div class="main-container" :style="{'left': mainContainerLeft+'px', 'width': mainContainerWidth+'px', 'padding-right': sidePadding+'px', 'padding-left': showSidebar ? '0px' : sidePadding+'px'}">
         <div class="main-view">
+          <my-header></my-header>
           <router-view></router-view>
         </div>
       </div>
@@ -30,6 +31,7 @@ import MySidebar from './components/MySidebar'
 import ConfirmModal from './components/modals/ConfirmModal'
 import UploadFileModal from './components/modals/UploadFileModal'
 import ImageModal from './components/modals/ImageModal'
+import MyHeader from './components/MyHeader'
 
 export default {
   name: 'App',
@@ -38,7 +40,8 @@ export default {
     MySidebar,
     ConfirmModal,
     UploadFileModal,
-    ImageModal
+    ImageModal,
+    MyHeader
   },
   data () {
     return {
@@ -229,27 +232,6 @@ export default {
 
 .clickable {
   cursor: pointer;
-}
-
-.desktop-header {
-  height: 50px;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-.mobile-header {
-  height: 40px;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-.common-header {
-  position: fixed;
-  top: 0px;
-  background-color: white;
-  z-index: 1;
-  min-width: 300px;
-  box-shadow: 0 2px 0 0 #f5f5f5;
 }
 
 
