@@ -34,8 +34,8 @@ const webpackConfig = merge(baseWebpackConfig, {
     new webpack.DefinePlugin({
       'process.env': env,
       'xTARGETx': JSON.stringify(target),
-      'xHTTPx': JSON.stringify('http://dmac.unl.edu:3000'),
-      'xWEBSOCKETx': JSON.stringify('ws://dmac.unl.edu:3000')
+      'xHTTPx': JSON.stringify('http://129.93.175.20:9000'),
+      'xWEBSOCKETx': JSON.stringify('ws://129.93.175.20:9000')
     }),
     new UglifyJsPlugin({
       uglifyOptions: {

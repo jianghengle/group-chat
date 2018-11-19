@@ -112,4 +112,4 @@ Kemal::Session.config do |config|
   config.secret = ENV["ADMIN_SECRET"] if ENV.has_key?("ADMIN_SECRET")
 end
 
-Kemal.run 3001
+Kemal.run 9001

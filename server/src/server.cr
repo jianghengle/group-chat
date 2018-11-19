@@ -114,7 +114,7 @@ module MyServer
         end
       end
 
-      Kemal.run
+      Kemal.run 9000
     end
   end
 end
