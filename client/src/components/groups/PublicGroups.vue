@@ -20,7 +20,10 @@
                     <div class="content">
                       <p>
                         <strong>{{g.name}}</strong> <br/>
-                        <small> {{g.owner.fullName}} &nbsp; | &nbsp; {{g.membershipCount}} </small> <br/>
+                        <small>
+                          <span class="clickable" @click="openDirectConversationModal(g, g.owner)">{{g.owner.fullName}}</span>
+                          &nbsp; | &nbsp; {{g.membershipCount}}
+                        </small> <br/>
                         {{g.description}}
                       </p>
                     </div>
@@ -109,6 +112,12 @@ export default {
         })
       })
     },
+    openDirectConversationModal (group, user) {
+      if(this.groups[group.id])
+        return
+      if(user.id != this.userId)
+        this.$store.commit('modals/openDirectConversationModal', user)
+    }
   },
   mounted () {
     this.$nextTick(function(){

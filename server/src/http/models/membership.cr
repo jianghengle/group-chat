@@ -53,12 +53,41 @@ module MyServer
         items.as(Array)
       end
 
+      def self.get_conversation_name_map(user_id, groups)
+        result = {} of String => String
+        conversations = groups.select { |g| g.category.to_s == "conversation" }
+        return result if conversations.empty?
+        conversation_ids = conversations.map { |c| c.id }
+        query = Query.where(:group_id, conversation_ids).where("user_id <> ?", [user_id])
+        items = Repo.all(Membership, query)
+        return result if items.nil?
+        items.as(Array).each do |i|
+          result[i.group_id.to_s] = i.user_id.to_s
+        end
+        user_name_map = User.get_name_map(result.values)
+        result.keys.each do |k|
+          v = result[k]
+          result[k] = ""
+          result[k] = user_name_map[v] if user_name_map.has_key? v
+        end
+        result
+      end
+
       def self.add_membership(group_id, user_id)
         membership = Membership.new
         membership.group_id = group_id
         membership.user_id = user_id
         changeset = Repo.insert(membership)
         raise changeset.errors.to_s unless changeset.valid?
+        new_id = nil.as(Int64?)
+        changeset.changes.each do |change|
+          if (change.has_key?(:id))
+            new_id = change[:id].as(Int64)
+          end
+        end
+        raise "cannot get new id!" if new_id.nil?
+        membership.id = new_id
+        membership
       end
 
       def self.delete_memberships_by_group_id(group_id)

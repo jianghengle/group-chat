@@ -93,8 +93,10 @@ module MyServer
           raise "cannot get group" if membership.nil?
 
           message = get_param!(ctx, "message")
-          chat = Chat.add_chat(user.id, group_id, message)
-          Membership.update_timestamp(membership, [chat])
+          attachment_key = get_param!(ctx, "attachmentKey")
+          forward = get_param!(ctx, "forward")
+          chat = Chat.add_chat(user.id, group_id, message, attachment_key)
+          Membership.update_timestamp(membership, [chat]) if forward.empty?
           Group.update_timestamp(group, chat)
           MyServer::WS::ClientStore.pull_group(group_id)
           "[#{chat.to_json}, #{user.to_json}]"

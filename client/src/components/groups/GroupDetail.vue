@@ -10,7 +10,7 @@
         <button class="delete" @click="error=''"></button>
         {{error}}
       </div>
-      <div v-if="group">
+      <div v-if="group && group.category != 'conversation'">
         <div class="field">
           <label class="label">Name</label>
           <p class="control">
@@ -68,13 +68,23 @@
               <tbody>
                 <tr>
                   <td>1</td>
-                  <td>{{group.owner.fullName}} <span v-if="group.ownerId == userId">(Me)</span></td>
+                  <td>
+                    <span :class="{'clickable': group.ownerId != userId}" @click="openDirectConversationModal(group.owner)">
+                      {{group.owner.fullName}}
+                    </span>
+                    <span v-if="group.ownerId == userId">(Me)</span>
+                  </td>
                   <td>Owner</td>
                   <td></td>
                 </tr>
                 <tr v-for="(member, i) in group.members">
                   <td>{{i+2}}</td>
-                  <td>{{member.fullName}} <span v-if="member.id == userId">(Me)</span></td>
+                  <td>
+                    <span :class="{'clickable': member.id != userId}" @click="openDirectConversationModal(member)">
+                      {{member.fullName}}
+                    </span>
+                    <span v-if="member.id == userId">(Me)</span>
+                  </td>
                   <td>Member</td>
                   <td>
                     <span class="icon clickable" v-if="isOwner" @click="deleteMember(member)">
@@ -90,6 +100,34 @@
         <div class="field is-grouped" v-if="!isOwner">
           <div class="control">
             <button class="button is-danger" :class="{'is-loading': waiting}" @click="quitGroup">Quit</button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="group && group.category == 'conversation'">
+        <div class="field">
+          <label class="label">Conversation</label>
+          <div class="control">
+            <table class="table is-hoverable is-fullwidth">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Full Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(member, i) in group.members">
+                  <td>{{i+1}}</td>
+                  <td>{{member.fullName}} <span v-if="member.id == userId">(Me)</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control">
+            <button class="button is-danger" :class="{'is-loading': waiting}" @click="quitConversation">Quit</button>
           </div>
         </div>
       </div>
@@ -266,6 +304,35 @@ export default {
         this.error = 'Failed to get detail!'
         this.waiting= false
       })
+    },
+    quitConversation () {
+      this.$store.commit('modals/openConfirmModal', {
+        title: 'Quit Conversation',
+        message: 'Are you sure to quit this conversation?',
+        button: 'Yes, I am sure!',
+        callback: {
+          method: this.quitConversationConfirmed,
+          context: this,
+          args: []
+        }
+      })
+    },
+    quitConversationConfirmed () {
+      this.waiting = true
+      var message = {userId: this.userId}
+      this.$http.post(xHTTPx + '/quit_conversation/' + this.groupId, message).then(response => {
+        this.waiting = false
+        this.error = ''
+        this.$store.commit('groups/deleteGroup', this.groupId)
+        this.$router.push('/')
+      }, response => {
+        this.waiting = false
+        this.error = 'Failed to quit conversation!'
+      })
+    },
+    openDirectConversationModal (user) {
+      if(this.group.category != 'conversation' && user.id != this.userId)
+        this.$store.commit('modals/openDirectConversationModal', user)
     }
   },
   mounted () {

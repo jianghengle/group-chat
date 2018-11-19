@@ -19,7 +19,7 @@
           {{webSocket}}
         </div>
         <a class="level-item" v-if="showSettingButton"
-          :class="{'has-text-grey': routeName=='GroupDetail', 'has-text-grey-light':  routeName=='Chats'}"
+          :class="{'has-text-grey': routeName=='GroupDetail', 'has-text-grey-light':  routeName=='GroupPage'}"
           @click="toggleShowSetting">
           <span class="icon">
             <v-icon name="cog"/>
@@ -34,6 +34,9 @@
 export default {
   name: 'my-header',
   computed: {
+    fullName () {
+      return this.$store.state.user.fullName
+    },
     isMobile () {
       return this.$store.state.ui.isMobile
     },
@@ -69,17 +72,19 @@ export default {
         return 'Public Groups'
       if(this.routeName == 'AddGroup')
         return 'Add Group'
-      if(this.routeName == 'Chats' || this.routeName == 'GroupDetail'){
+      if(this.routeName == 'GroupPage' || this.routeName == 'GroupDetail'){
         var groupId = this.$route.params.groupId
         var group = this.$store.state.groups.groups[groupId]
         if(group){
+          if(group.category == 'conversation' && group.name == '__')
+            return 'Yourself Only!'
           return group.name
         }
       }
       return ''
     },
     showSettingButton () {
-      return this.routeName == 'Chats' || this.routeName == 'GroupDetail'
+      return this.routeName == 'GroupPage' || this.routeName == 'GroupDetail'
     }
   },
   methods: {
@@ -89,7 +94,7 @@ export default {
     },
     toggleShowSetting () {
       var groupId = this.$route.params.groupId
-      if(this.routeName == 'Chats'){
+      if(this.routeName == 'GroupPage'){
         this.$router.push('/group_detail/' + groupId)
       }else{
         this.$router.push('/group/' + groupId)

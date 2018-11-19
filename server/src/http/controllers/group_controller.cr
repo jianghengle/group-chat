@@ -16,8 +16,13 @@ module MyServer
           memberships.each do |m|
             timestamp_map[m.group_id.to_s] = m.timestamp.to_s
           end
+          conversation_name_map = Membership.get_conversation_name_map(user.id, groups)
           groups_json = groups.join(", ") do |g|
-            g.to_json_with_user_timestamp(timestamp_map[g.id.to_s])
+            id = g.id.to_s
+            timestamp = timestamp_map[id]
+            conversation_name = ""
+            conversation_name = conversation_name_map[id] if conversation_name_map.has_key? id
+            g.to_json_with_more(timestamp, conversation_name)
           end
           "[" + groups_json + "]"
         rescue ex : InsufficientParameters
@@ -58,7 +63,12 @@ module MyServer
           group = Group.get_group_by_id(group_id)
           membership = Membership.get_membership_by_group_id_user_id(group_id, user.id)
           raise "cannot get group" if membership.nil?
-          group.to_json_with_user_timestamp(membership.timestamp)
+          conversation_name = ""
+          if group.category.to_s == "conversation"
+            conversation_name_map = Membership.get_conversation_name_map(user.id, [group])
+            conversation_name = conversation_name_map[group_id.to_s] if conversation_name_map.has_key? group_id.to_s
+          end
+          group.to_json_with_more(membership.timestamp, conversation_name)
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
         rescue e : Exception
@@ -90,7 +100,7 @@ module MyServer
           group.owner_id = user.id
           group = Group.add_group(group)
           Membership.add_membership(group.id, user.id)
-          group.to_json_with_user_timestamp("")
+          group.to_json_with_more("", "")
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
         rescue e : Exception
@@ -169,6 +179,42 @@ module MyServer
           Membership.delete_membership(membership)
           MyServer::WS::ClientStore.pull_group(group_id, [user_id.to_s])
           {ok: true}.to_json
+        rescue ex : InsufficientParameters
+          error(ctx, "Not all required parameters were present")
+        rescue e : Exception
+          error(ctx, e.message.to_s)
+        end
+      end
+
+      def quit_conversation(ctx)
+        begin
+          user = verify_token(ctx)
+          group_id = get_param!(ctx, "group_id").to_i
+          group = Group.get_group_by_id(group_id)
+          raise "not a conversation" if group.category.to_s != "conversation"
+          user_id = get_param!(ctx, "userId").to_i
+          membership = Membership.get_membership_by_group_id_user_id(group_id, user_id)
+          raise "not a member" if membership.nil?
+          raise "not yourself" if membership.user_id != user.id
+          Membership.delete_membership(membership)
+          memberships = Membership.get_memberships_by_group_id(group_id)
+          Group.delete_group(group) if memberships.empty?
+          user_ids = [user_id.to_s]
+          user_ids << memberships[0].user_id.to_s unless memberships.empty?
+          MyServer::WS::ClientStore.pull_group(group_id, user_ids)
+          {ok: true}.to_json
+        rescue ex : InsufficientParameters
+          error(ctx, "Not all required parameters were present")
+        rescue e : Exception
+          error(ctx, e.message.to_s)
+        end
+      end
+
+      def start_conversation(ctx)
+        begin
+          user = verify_token(ctx)
+          user_id = get_param!(ctx, "userId").to_i
+          Group.start_conversation(user.id, user_id)
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
         rescue e : Exception

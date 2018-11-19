@@ -50,6 +50,16 @@
             </span>
             Direct Messages
           </a>
+          <ul v-if="conversations.length" class="sub-menu">
+            <li v-for="g in conversations" :key="'nav-group-'+g.id">
+              <a :class="{'is-active': groupId==g.id, 'has-text-weight-bold': (g.timestamp && (!g.userTimestamp || g.userTimestamp < g.timestamp))}"
+                @click="switchRoute('/group/' + g.id)">{{g.name == '__' ? 'Yourself Only!' : g.name}}
+                <span class="icon" v-if="(g.timestamp && (!g.userTimestamp || g.userTimestamp < g.timestamp))">
+                  <v-icon name="comment-dots"/>
+                </span>
+              </a>
+            </li>
+          </ul>
         </li>
       </ul>
     </aside>
@@ -83,7 +93,14 @@ export default {
     },
     groups () {
       return Object.values(this.$store.state.groups.groups).filter(function(g){
-        return g
+        return (g && (g.category != 'conversation'))
+      })
+    },
+    conversations () {
+      return Object.values(this.$store.state.groups.groups).filter(function(g){
+        return (g && (g.category == 'conversation'))
+      }).sort(function(a, b){
+        return a.timestamp - b.timestamp
       })
     }
   },

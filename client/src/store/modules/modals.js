@@ -11,6 +11,7 @@ export const state = {
   addGroupModal: {opened: false},
   uploadFileModal: {opened: false, message: ''},
   imageModal: {opened: false, source: ''},
+  directConversationModal: {opened: false, user: {}},
 }
 
 // mutations
@@ -66,6 +67,16 @@ export const mutations = {
   closeImageModal (state) {
     state.imageModal.source = ''
     state.imageModal.opened = false
+  },
+
+  openDirectConversationModal (state, user) {
+    state.directConversationModal.user = user
+    state.directConversationModal.opened = true
+  },
+
+  closeDirectConversationModal (state, user) {
+    state.directConversationModal.user = {}
+    state.directConversationModal.opened = false
   }
 }
 

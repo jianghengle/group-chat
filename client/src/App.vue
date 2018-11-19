@@ -20,6 +20,7 @@
     <confirm-modal></confirm-modal>
     <upload-file-modal></upload-file-modal>
     <image-modal></image-modal>
+    <direct-conversation-modal></direct-conversation-modal>
   </div>
 </template>
 
@@ -31,6 +32,7 @@ import MySidebar from './components/MySidebar'
 import ConfirmModal from './components/modals/ConfirmModal'
 import UploadFileModal from './components/modals/UploadFileModal'
 import ImageModal from './components/modals/ImageModal'
+import DirectConversationModal from './components/modals/DirectConversationModal'
 import MyHeader from './components/MyHeader'
 
 export default {
@@ -41,6 +43,7 @@ export default {
     ConfirmModal,
     UploadFileModal,
     ImageModal,
+    DirectConversationModal,
     MyHeader
   },
   data () {

@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import MyUser from '@/components/MyUser'
 import AddGroup from '@/components/AddGroup'
 import ChildPage from '@/components/children/ChildPage'
-import Chats from '@/components/groups/Chats'
+import GroupPage from '@/components/groups/GroupPage'
 import GroupDetail from '@/components/groups/GroupDetail'
 import PublicGroups from '@/components/groups/PublicGroups'
 
@@ -28,8 +28,8 @@ export default new Router({
     },
     {
       path: '/group/:groupId',
-      name: 'Chats',
-      component: Chats
+      name: 'GroupPage',
+      component: GroupPage
     },
     {
       path: '/group_detail/:groupId',

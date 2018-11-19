@@ -72,6 +72,14 @@ module MyServer
         HttpAPI::GroupController.quit_group(env)
       end
 
+      post "/start_conversation" do |env|
+        HttpAPI::GroupController.start_conversation(env)
+      end
+
+      post "/quit_conversation/:group_id" do |env|
+        HttpAPI::GroupController.quit_conversation(env)
+      end
+
       get "/get_latest_chats/:group_id" do |env|
         HttpAPI::ChatController.get_latest_chats(env)
       end

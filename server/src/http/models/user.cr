@@ -46,6 +46,17 @@ module MyServer
         raise "Cannot find user" if user.nil?
         user
       end
+
+      def self.get_name_map(ids)
+        result = {} of String => String
+        query = Query.where(:id, ids)
+        items = Repo.all(User, query)
+        return result if items.nil?
+        items.as(Array).each do |i|
+          result[i.id.to_s] = i.full_name.to_s
+        end
+        result
+      end
     end
   end
 end

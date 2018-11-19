@@ -25,11 +25,13 @@ module MyServer
         end
       end
 
-      def to_json_with_user_timestamp(user_timestamp)
+      def to_json_with_more(user_timestamp, conversation_name)
         String.build do |str|
           str << "{"
           str << "\"id\":" << @id << ","
-          str << "\"name\":" << @name.to_json << ","
+          name = @name
+          name = conversation_name unless conversation_name.empty?
+          str << "\"name\":" << name.to_json << ","
           str << "\"category\":" << @category.to_json << ","
           str << "\"description\":" << @description.to_json << ","
           str << "\"status\":" << @status.to_json << ","
@@ -81,6 +83,7 @@ module MyServer
       end
 
       def self.delete_group(group)
+        Chat.delete_all_by_group_id(group.id)
         changeset = Repo.delete(group)
         raise changeset.errors.to_s unless changeset.valid?
       end
@@ -97,6 +100,35 @@ module MyServer
           group.timestamp = chat_timestamp if timestamp < chat_timestamp
         end
         Repo.update(group)
+      end
+
+      def self.get_conversation_by_ids(ids)
+        query = Query.where(:id, ids).where(category: "conversation")
+        items = Repo.all(Group, query)
+        return nil if items.nil?
+        items.as(Array).first?
+      end
+
+      def self.start_conversation(user1_id, user2_id)
+        user2 = User.get_user_by_id(user2_id)
+        memberships1 = Membership.get_memberships_by_user_id(user1_id)
+        g1_ids = memberships1.map { |m| m.group_id.to_s }
+        memberships2 = Membership.get_memberships_by_user_id(user2_id)
+        g2_ids = memberships2.map { |m| m.group_id.to_s }
+        common_group_ids = g1_ids & g2_ids
+        conversation = Group.get_conversation_by_ids(common_group_ids)
+        if conversation.nil?
+          conversation = Group.new
+          conversation.name = "__"
+          conversation.category = "conversation"
+          conversation = Group.add_group(conversation)
+          membership1 = Membership.add_membership(conversation.id, user1_id)
+          membership2 = Membership.add_membership(conversation.id, user2_id)
+          return conversation.to_json_with_more("", user2.full_name.to_s)
+        end
+        membership1 = Membership.get_membership_by_group_id_user_id(conversation.id, user1_id)
+        membership2 = Membership.get_membership_by_group_id_user_id(conversation.id, user2_id)
+        conversation.to_json_with_more("", user2.full_name.to_s)
       end
     end
   end

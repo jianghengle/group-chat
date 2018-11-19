@@ -53,11 +53,12 @@ module MyServer
         chat
       end
 
-      def self.add_chat(user_id, group_id, message)
+      def self.add_chat(user_id, group_id, message, attachment_key)
         chat = Chat.new
         chat.user_id = user_id
         chat.group_id = group_id
         chat.message = message
+        chat.attachment_key = attachment_key
         chat.timestamp = Time.now.epoch_ms
         changeset = Repo.insert(chat)
         raise changeset.errors.to_s unless changeset.valid?
@@ -95,6 +96,11 @@ module MyServer
         raise "cannot get new id!" if chat_id.nil?
         chat.id = chat_id
         chat
+      end
+
+      def self.delete_all_by_group_id(group_id)
+        query = Query.where(group_id: group_id)
+        Repo.delete_all(Chat, query)
       end
     end
   end

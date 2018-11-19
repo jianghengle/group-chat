@@ -2,21 +2,47 @@
   <div>
     <div class="seperator-container has-text-centered" v-if="!isContinued">
       <div class="new-message-label" v-if="isNewChat">new messages</div>
-      <hr class="hr chat-seperator" :style="{'background-color': seperatorColor}"></hr>
+      <hr class="hr chat-seperator" :style="{'background-color': seperatorColor, 'margin-top': seperatorMargin, 'margin-bottom': seperatorMargin}"></hr>
       <div class="new-day-label" v-if="isNewDay">{{isNewDay}}</div>
     </div>
 
-    <article class="media" :id="'chat-'+chat1.id">
+    <article class="media chat" :id="'chat-'+chat1.id">
+      <div class="forward-dropdown">
+        <div class="dropdown is-right is-hoverable">
+          <div class="dropdown-trigger">
+            <button class="button forward-button" aria-haspopup="true" aria-controls="dropdown-menu">
+              <span class="icon is-small">
+                <v-icon name="share"></v-icon>
+              </span>
+            </button>
+          </div>
+          <div class="dropdown-menu forward-menu" id="dropdown-menu" role="menu">
+            <div class="dropdown-content">
+              <a class="dropdown-item forward-item" v-for="g in groups" @click="forwardChat(chat1, g)">
+                {{g.name}}
+              </a>
+              <hr class="dropdown-divider" v-if="groups.length && conversations.length">
+              <a class="dropdown-item forward-item" v-for="c in conversations" @click="forwardChat(chat1, c)">
+                {{c.name == '__' ? 'Yourself Only!' : c.name}}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
       <figure class="media-left">
         <p class="image is-32x32">
           <img v-if="!isContinued" src="https://bulma.io/images/placeholders/128x128.png">
+          <small class="small-time-label" v-else>{{chat1.timeLabelSmall}}</small>
         </p>
       </figure>
       <div class="media-content">
         <div class="content">
           <p>
-            <span v-if="!isContinued"><strong>{{chat1.user.fullName}}</strong> <small>@{{chat1.timeLabel}}</small><br></span>
-            <span class="chat-message">{{chat1.message}}</span><br>
+            <span v-if="!isContinued">
+              <strong :class="{'clickable': group.category!='conversation' && chat1.user.id!=userId}" @click="openDirectConversationModal(chat1.user)">{{chat1.user.fullName}}</strong>
+              <small>{{chat1.timeLabel}}</small><br>
+            </span>
+            <span v-if="chat1.message" class="chat-message">{{chat1.message}}<br></span>
             <span v-if="chat1.downloadLink">
               <span v-if="chat1.fileType=='image'"><img class="chat-image clickable" :src="chat1.downloadLink" @click="openImageModal(chat1.downloadLink)" /></span>
               <span>
@@ -52,8 +78,14 @@ export default {
     isMobile () {
       return this.$store.state.ui.isMobile
     },
+    userId () {
+      return this.$store.state.user.userId
+    },
     groupId () {
       return this.$route.params.groupId
+    },
+    group () {
+      return this.$store.state.groups.groups[this.groupId]
     },
     lastTimestamp () {
       return this.$store.state.groups.lastTimestamps[this.groupId]
@@ -81,26 +113,58 @@ export default {
       return false
     },
     isContinued () {
-      if(this.isNewDay)
+      if(this.isNewDay || this.isNewChat)
         return false
       if(!this.chat0)
         return false
       if(this.chat0.userId != this.chat1.userId)
         return false
-      return this.chat1.timestamp - this.chat0.timestamp < 60000
+      return true
     },
     seperatorColor () {
       if(this.isNewChat)
         return '#ff3860'
       if (this.isNewDay)
         return '#363636'
-      return '#dbdbdb'
+      return 'rgba(0,0,0,0)'
     },
+    seperatorMargin () {
+      if(this.isNewDay){
+        return '15px'
+      }
+      return '5px'
+    },
+    groups () {
+      var groupId = this.groupId
+      return Object.values(this.$store.state.groups.groups).filter(function(g){
+        return (g && (g.category != 'conversation') && (g.id != groupId))
+      })
+    },
+    conversations () {
+      var groupId = this.groupId
+      return Object.values(this.$store.state.groups.groups).filter(function(g){
+        return (g && (g.category == 'conversation') && (g.id != groupId))
+      }).sort(function(a, b){
+        return a.timestamp - b.timestamp
+      })
+    }
   },
   methods: {
     openImageModal (source) {
       this.$store.commit('modals/openImageModal', source)
     },
+    openDirectConversationModal (user) {
+      if(this.group.category != 'conversation' && user.id != this.userId)
+        this.$store.commit('modals/openDirectConversationModal', user)
+    },
+    forwardChat (chat, g) {
+      var message = {message: chat.message, attachmentKey: chat.attachmentKey, forward: 'yes'}
+      this.$http.post(xHTTPx + '/add_chat/' + g.id, message).then(response => {
+        var resp = response.body
+      },response => {
+        this.error = 'Failed to forward message!'
+      })
+    }
   },
   mounted () {
     
@@ -148,7 +212,7 @@ export default {
   position: relative;
   top: -10px;
   width: 110px;
-  margin-bottom: 15px;
+  margin-bottom: -10px;
   font-size: 12px;
   font-weight: bold;
   background-color: white;
@@ -156,6 +220,51 @@ export default {
   text-align: center;
   border: 1px solid #ff3860;
   border-radius: 5px;
+}
+
+.chat {
+  padding: 2px;
+  border-radius: 2px;
+  position: relative;
+  clear: both;
+}
+
+.small-time-label {
+  display: none;
+  color: hsl(0, 0%, 48%);
+}
+
+.forward-dropdown {
+  position: absolute;
+  right: 0px;
+  display: none;
+
+  .forward-button {
+    color: hsl(0, 0%, 71%);
+    border: none;
+    background-color: hsl(0, 0%, 96%);
+  }
+
+  .forward-menu {
+    min-width: 150px;
+    top: 30px;
+
+    .forward-item {
+      padding-right: 10px;
+    }
+  }
+}
+
+.chat:hover {
+  background-color: hsl(0, 0%, 96%);
+
+  .small-time-label {
+    display: inline;
+  }
+
+  .forward-dropdown {
+    display: block;
+  }
 }
 
 </style>

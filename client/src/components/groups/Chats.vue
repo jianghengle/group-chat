@@ -193,6 +193,7 @@ export default {
         c.user = userMap[c.userId]
         var d = new Date(c.timestamp)
         c.timeLabel = DateForm(d, 'h:MM TT')
+        c.timeLabelSmall = DateForm(d, 'h:MM')
         if(c.attachmentKey && c.filename){
           c.downloadLink = xHTTPx + /download_attachment/ + c.attachmentKey
           var ext = c.filename.includes('.') ? c.filename.split('.').pop().toLowerCase() : ''
@@ -212,7 +213,7 @@ export default {
     sendMessage () {
       if(!this.message.trim())
         return
-      this.$http.post(xHTTPx + '/add_chat/' + this.groupId, {message: this.message.trim()}).then(response => {
+      this.$http.post(xHTTPx + '/add_chat/' + this.groupId, {message: this.message.trim(), attachmentKey: '', forward: ''}).then(response => {
         var resp = response.body
         var chats = this.buildChats ([resp[0]], [resp[1]])
         this.$store.commit('groups/pushGroupChats', {groupId: this.groupId, chats: chats})
