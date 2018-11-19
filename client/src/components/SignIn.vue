@@ -56,7 +56,7 @@ export default {
   name: 'sign-in',
   data () {
     return {
-      email: 'guest@guest.com',
+      email: 'john.smith@guest.com',
       password: '123456',
       rememberMe: false,
       error: '',

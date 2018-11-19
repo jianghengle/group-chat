@@ -186,10 +186,12 @@ export default {
 
 .chat-image {
   max-width: 90%;
+  max-height: 600px;
 }
 
 .chat-video {
   max-width: 90%;
+  max-height: 600px;
 }
 
 .seperator-container {

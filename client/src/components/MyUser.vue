@@ -47,6 +47,7 @@ export default {
     signOut () {
       delete Vue.http.headers.common['Authorization']
       this.$store.commit('user/reset')
+      this.$store.commit('groups/reset')
     },
   }
 }

@@ -91,6 +91,13 @@ export const mutations = {
   setHistoryLoaded (state, groupId) {
     Vue.set(state.historyLoaded, groupId, true)
   },
+
+  reset (state) {
+    state.groups = {}
+    state.chats = {}
+    state.lastTimestamps = {}
+    state.historyLoaded = {}
+  }
 }
 
 export default {

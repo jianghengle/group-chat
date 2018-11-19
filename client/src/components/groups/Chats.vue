@@ -198,7 +198,7 @@ export default {
           c.downloadLink = xHTTPx + /download_attachment/ + c.attachmentKey
           var ext = c.filename.includes('.') ? c.filename.split('.').pop().toLowerCase() : ''
           var imageExts = ['png', 'jpg', 'jpeg', 'gif', 'bmp']
-          var videoExts = ['mp4', 'webm', 'ogg']
+          var videoExts = ['mp4', 'webm', 'ogg', 'mov']
           if(imageExts.includes(ext)){
             c.fileType = 'image'
           }else if(videoExts.includes(ext)){
