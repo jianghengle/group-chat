@@ -1,13 +1,7 @@
 <template>
   <nb-container :style="{backgroundColor: '#fff'}">
     <status-bar :barStyle="'light-content'"></status-bar>
-    <nb-header>
-      <nb-left />
-      <nb-body>
-        <nb-title>Sign In</nb-title>
-      </nb-body>
-      <nb-right />
-    </nb-header>
+    <my-header :navigation="navigation" />
     <nb-content v-if="ready" padder>
       <view class="home-container">
         <view class="text-container">
@@ -39,10 +33,13 @@
 import { Dimensions, Platform, AsyncStorage } from "react-native";
 import { Toast } from "native-base";
 import store from '../store'
-
 import axios from 'axios'
+import MyHeader from './MyHeader'
 
 export default {
+  components: {
+    MyHeader
+  },
   props: {
     navigation: {
       type: Object
@@ -83,20 +80,26 @@ export default {
         type: "danger",
         position: "top"
       })
+    },
+    loadUser: async function() {
+      try {
+        const value = await AsyncStorage.getItem('user');
+        if (value !== null) {
+          var user = JSON.parse(value)
+          if(user.token){
+            store.commit('user/setUser', user)
+            this.navigation.navigate('PublicGroups')
+          }
+        }
+        this.ready = true
+      } catch (error) {
+        console.log('failed to get user from AsyncStorage')
+        this.ready = true
+      }
     }
   },
   created () {
-    var vm = this
-    AsyncStorage.getItem('user').then((val) => {
-      if (val) {
-        var user = JSON.parse(val)
-        if(user.token){
-          store.commit('user/setUser', user)
-          vm.navigation.navigate('PublicGroups')
-        }
-      }
-      vm.ready = true
-    })
+    this.loadUser()
   }
 }
 </script>

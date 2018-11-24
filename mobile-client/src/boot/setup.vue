@@ -17,7 +17,6 @@ import App from "../App.vue";
 // registering all native-base components to the global scope of the Vue
 Vue.use(VueNativeBase);
 
-import axios from 'axios'
 global.xHTTPx = 'http://glodet.nebraska.edu:9000';
 
 import store from '../store'
