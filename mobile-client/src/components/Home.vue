@@ -1,7 +1,6 @@
 <template>
   <nb-container :style="{backgroundColor: '#fff'}">
     <status-bar :barStyle="'light-content'"></status-bar>
-    <my-header :navigation="navigation" />
     <nb-content v-if="ready" padder>
       <view class="home-container">
         <view class="text-container">
@@ -106,6 +105,10 @@ export default {
 
  
 <style>
+.home-container {
+  margin-top: 80;
+}
+
 .text-container {
   padding: 15;
   background-color: transparent;
