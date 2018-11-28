@@ -1,14 +1,41 @@
 <template>
 
-  <nb-list-item avatar :style="{marginLeft: 0}">
-    <nb-left>
-      <nb-thumbnail small :source="logo" :style="{borderRadius: 1}"/>
-    </nb-left>
-    <nb-body :style="{marginLeft: 8, borderColor: 'transparent'}">
-      <nb-text :style="{fontWeight: '700'}">Kumar Pratik  <nb-text :style="{fontWeight: '300'}" note>3:43 pm</nb-text></nb-text>
-      <nb-text>To mixup Image with other NativeBase components in a single CardItem, include the content within Body componente</nb-text>
-    </nb-body>
-  </nb-list-item>
+  <nb-list>
+    <nb-list-item itemHeader first v-if="!isContinued && (isNewChat || isNewDay)"
+      :style="{paddingLeft: 0, paddingRight: 0, paddingTop: 5, paddingBottom: 5, borderBottomWidth: 1, borderColor: seperatorColor, marginTop: seperatorMarginTop, marginBottom: seperatorMarginBottom}">
+      <nb-left :style="{flex: 2}">
+        <nb-text v-if="isNewDay" :style="{fontSize: 16, fontWeight: '700', color: '#363636'}">{{isNewDay}}</nb-text>
+      </nb-left>
+      <nb-right :style="{flex: 2}">
+        <nb-text v-if="isNewChat" :style="{color: '#df2736'}">new messages</nb-text>
+      </nb-right>
+    </nb-list-item>
+
+    <nb-list-item avatar :style="{marginLeft: 0, marginTop: isContinued ? -15 : 0}">
+      <nb-left :style="{paddingTop: 10}">
+        <nb-thumbnail small :source="isContinued ? {} : logo" :style="{borderRadius: 3}"/>
+      </nb-left>
+      <nb-body :style="{marginLeft: 8, borderColor: 'transparent', paddingTop: 8, paddingBottom: 8}">
+        <nb-text v-if="!isContinued" :style="{fontWeight: '700', color: '#363636'}">{{chat1.user.fullName}}  <nb-text :style="{fontWeight: '300', fontSize: 12}" note>{{chat1.timeLabel}}</nb-text></nb-text>
+        <nb-text :style="{color: '#363636'}">{{chat1.message}}</nb-text>
+        <view v-if="chat1.downloadLink">
+          <view v-if="chat1.fileType=='image'">
+            <touchable-without-feedback :onPress="showImageViewFromHere">
+              <image :source="{uri: chat1.downloadLink}" :style="{width: imageWidth, height: imageHeight, resizeMode: 'contain'}" />
+            </touchable-without-feedback>
+          </view>
+          <!--<view v-if="chat1.fileType=='video'">
+            <video v-if="!videoError" :source="{uri: chat1.downloadLink}" :style="{width: videoWidth, height: videoHeight}" useNativeControls :resizeMode="'contain'" :onError="onVideoError" />
+          </view>-->
+          <view>
+             <nb-button transparent primary small :onPress="openUri">
+              <nb-text :style="{paddingLeft: 0}"><nb-icon name="download" :style="{fontSize: 18, color: '#005aff'}" /> {{chat1.filename}}</nb-text>
+            </nb-button>
+          </view>
+        </view>
+      </nb-body>
+    </nb-list-item>
+  </nb-list>
 
 </template>
 
@@ -18,31 +45,130 @@ import { Alert } from "react-native";
 import store from '../store'
 import axios from 'axios'
 import logo from "../../assets/128x128.png";
+//import { Video } from 'expo';
+import moment from 'moment';
 
 const deviceWidth = Dimensions.get("window").width;
 
 export default {
   name: 'chat',
+  components: {
+    //Video
+  },
   props: {
     navigation: {
       type: Object
+    },
+    chat0: {
+      type: Object
+    },
+    chat1: {
+      type: Object
+    },
+    showImageView: {
+      type: Function
+    },
+    openWebView: {
+      type: Function
     }
   },
   data: function() {
     return {
       message: '',
       logo,
+      contentWidth: deviceWidth - 76,
+      videoError: false,
     }
   },
   computed: {
+    userId () {
+      return store.state.user.user.id
+    },
     groupId () {
       return this.navigation.state.params.groupId
     },
     group () {
       return store.state.groups.groups[this.groupId]
-    }
+    },
+    lastTimestamp () {
+      return store.state.groups.lastTimestamps[this.groupId]
+    },
+    isNewChat () {
+      if(!this.lastTimestamp)
+        return false
+      if(!this.chat0)
+        if(this.chat1.timestamp > this.lastTimestamp)
+          return true
+        else
+          return false
+      if(this.chat0.timestamp <= this.lastTimestamp && this.chat1.timestamp > this.lastTimestamp)
+        return true
+      return false
+    },
+    isNewDay () {
+      if(!this.chat0){
+        var d = moment(this.chat1.timestamp)
+        return d.format('MMM D')
+      }
+      var d0 = moment(this.chat0.timestamp)
+      var day0 = d0.format('MMM D')
+      var d1 = moment(this.chat1.timestamp)
+      var day1 = d1.format('MMM D')
+      if(day0 != day1)
+        return day1
+      return false
+    },
+    isContinued () {
+      if(this.isNewDay || this.isNewChat)
+        return false
+      if(!this.chat0)
+        return false
+      if(this.chat0.userId != this.chat1.userId)
+        return false
+      return true
+    },
+    imageWidth () {
+      return this.contentWidth
+    },
+    imageHeight () {
+      return this.imageWidth * 0.75
+    },
+    videoWidth () {
+      return this.contentWidth
+    },
+    videoHeight () {
+      return this.videoWidth * 0.55
+    },
+    seperatorColor () {
+      if(this.isNewChat)
+        return '#df2736'
+      if (this.isNewDay)
+        return '#363636'
+      return 'rgba(0,0,0,0)'
+    },
+    seperatorMarginTop () {
+      if(this.isNewDay){
+        return 10
+      }
+      return 0
+    },
+    seperatorMarginBottom () {
+      if(this.isNewDay){
+        return 5
+      }
+      return 0
+    },
   },
   methods: {
+    showImageViewFromHere () {
+      this.showImageView(this.chat1.id)
+    },
+    onVideoError (err) {
+      this.videoError = true
+    },
+    openUri () {
+      this.openWebView(this.chat1.downloadLink, this.chat1.filename)
+    }
   },
   mounted () {
   

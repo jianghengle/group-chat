@@ -1,12 +1,12 @@
 <template>
   <nb-header>
     <nb-left>
-      <nb-button transparent :onPress="goBack" v-if="route.routeName != 'Home'">
+      <nb-button transparent :onPress="goBack" v-if="route.routeName != 'Home'" :style="{width: 50}">
         <nb-icon name="arrow-back" />
       </nb-button>
     </nb-left>
     <nb-body>
-      <nb-title :style="{width: 300}">{{title}}</nb-title>
+      <nb-title :style="{width: 200}">{{title}}</nb-title>
     </nb-body>
     <nb-right>
       <nb-button transparent :onPress="goGroupDetail" v-if="route.routeName == 'Group'">

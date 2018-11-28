@@ -30,9 +30,9 @@
             <nb-card-item footer></nb-card-item>
           </nb-card>
         </view>
+
       </nb-content>
     </view>
-
   </nb-container>
 </template>
 
@@ -43,9 +43,10 @@ import store from '../store'
 import axios from 'axios'
 import MyHeader from './MyHeader'
 
+
 export default {
   components: {
-    MyHeader
+    MyHeader,
   },
   props: {
     navigation: {
