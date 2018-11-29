@@ -6806,6 +6806,19 @@ react-native-branch@2.0.0-beta.3:
   resolved "https://registry.yarnpkg.com/react-native-branch/-/react-native-branch-2.0.0-beta.3.tgz#2167af86bbc9f964bd45bd5f37684e5b54965e32"
   integrity sha1-IWevhrvJ+WS9Rb1fN2hOW1SWXjI=
 
+react-native-camera-roll-picker@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/react-native-camera-roll-picker/-/react-native-camera-roll-picker-1.2.3.tgz#b117fd3a2b9012dcccee1261a9bc427226b8d6d2"
+  integrity sha1-sRf9OiuQEtzM7hJhqbxCcia41tI=
+
+react-native-camera@^1.4.3:
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/react-native-camera/-/react-native-camera-1.4.3.tgz#71359ae8efdf372fb1b8b5ec72ecae1c6708da4b"
+  integrity sha512-jE9AYNOxwldJxjKKyWrERQH0Qjs6MxoInlqdscCcZnOoxD4Vmq4ut/pwauKsDLJHJyECI7yNzoapLZDtwM2YMw==
+  dependencies:
+    lodash "^4.17.10"
+    prop-types "^15.6.2"
+
 react-native-dismiss-keyboard@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/react-native-dismiss-keyboard/-/react-native-dismiss-keyboard-1.0.0.tgz#32886242b3f2317e121f3aeb9b0a585e2b879b49"
@@ -6853,6 +6866,11 @@ react-native-gesture-handler@1.0.0-alpha.41:
     hoist-non-react-statics "^2.3.1"
     invariant "^2.2.2"
     prop-types "^15.5.10"
+
+react-native-image-picker@^0.27.1:
+  version "0.27.1"
+  resolved "https://registry.yarnpkg.com/react-native-image-picker/-/react-native-image-picker-0.27.1.tgz#32877c667e8c2713466fe178a6c7dd648e6cb5d3"
+  integrity sha512-LuEt5I9TFe3+lfN8E9geuN2OOgnld0QmeHRPTCV+mzkT5zASsoibNIUItt6WQBWG4nXC/90aufQYZn92i3lTxw==
 
 react-native-image-view@^2.1.1:
   version "2.1.1"

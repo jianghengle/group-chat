@@ -30,9 +30,11 @@
 
     <web-view-modal :webView="webView" :closeWebView="closeWebView"></web-view-modal>
 
+    <chat-modal :newChat="newChat" :closeNewChat="closeNewChat"></chat-modal>
+
     <keyboard-avoiding-view behavior="padding">
       <view :style="{flexDirection: 'row', backgroundColor: '#f6f6f6'}">
-        <nb-button transparent>
+        <nb-button transparent :onPress="openNewChat">
           <nb-text :style="{fontWeight: '500', fontSize: 28, color: '#7a7a7a'}">+</nb-text>
         </nb-button>
         <text-input
@@ -60,6 +62,7 @@ import Chat from './Chat'
 import MyHeader from './MyHeader'
 import ImageView from 'react-native-image-view'
 import WebViewModal from './WebViewModal'
+import ChatModal from './ChatModal'
 
 const deviceWidth = Dimensions.get("window").width;
 const deviceHeight = Dimensions.get("window").height;
@@ -70,7 +73,8 @@ export default {
     MyHeader,
     Chat,
     ImageView,
-    WebViewModal
+    WebViewModal,
+    ChatModal
   },
   props: {
     navigation: {
@@ -88,6 +92,9 @@ export default {
         opened: false,
         uri: null,
         title: ''
+      },
+      newChat: {
+        opened: false
       }
     }
   },
@@ -293,6 +300,12 @@ export default {
       this.webView.uri = uri
       this.webView.title = title
       this.webView.opened = true
+    },
+    closeNewChat () {
+      this.newChat.opened = false
+    },
+    openNewChat () {
+      this.newChat.opened = true
     },
     scrollToLatest () {
       this.$refs.chatsContainer.scrollToEnd()

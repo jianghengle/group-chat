@@ -37,12 +37,11 @@
 </template>
 
 <script>
-import { Alert } from "react-native";
+import { Alert, CameraRoll } from "react-native";
 import { Toast } from "native-base";
 import store from '../store'
 import axios from 'axios'
 import MyHeader from './MyHeader'
-
 
 export default {
   components: {
@@ -56,7 +55,8 @@ export default {
   data: function() {
     return {
       waiting: false,
-      publicGroups: []
+      publicGroups: [],
+      photos: [],
     }
   },
   computed: {
