@@ -4,7 +4,7 @@
 
     <nb-content padder>
       <nb-spinner v-if="!group" />
-      <view v-if="group">
+      <view v-if="group && group.category != 'conversation'">
         <nb-form>
           <nb-label class="my-form-label">Name</nb-label>
           <nb-input v-model="newName" :disabled="!isOwner" />
@@ -37,15 +37,21 @@
 
         <nb-label class="my-form-label" :style="{marginTop: 40}">Members</nb-label>
         <nb-swipe-row
+          :leftOpenValue="75"
+          :left="getSwipeLeftComponet(group.owner)"
           :body="getSwipeBodyComponet(group.owner.id == userId ? (group.owner.fullName + ' (Owner, Me)') : group.owner.fullName + ' (Owner)')"/>
         <view v-if="isOwner">
           <nb-swipe-row v-for="m in group.members" :key="'member-' + m.id"
+            :leftOpenValue="75"
             :rightOpenValue="-75"
+            :left="getSwipeLeftComponet(m)"
             :body="getSwipeBodyComponet(m.id == userId ? (m.fullName + ' (Me)') : m.fullName)"
             :right="getSwipeRightComponet(m)" />
         </view>
         <view v-if="!isOwner">
           <nb-swipe-row v-for="m in group.members" :key="'member-' + m.id"
+            :leftOpenValue="75"
+            :left="getSwipeLeftComponet(m)"
             :body="getSwipeBodyComponet(m.id == userId ? (m.fullName + ' (Me)') : m.fullName)" />
         </view>
 
@@ -54,6 +60,21 @@
         </nb-button>
 
         <nb-button block danger :style="{marginTop: 25}" v-bind:on-press="quitGroup" v-if="!isOwner">
+          <nb-text>Quit</nb-text>
+        </nb-button>
+      </view>
+
+      <view v-if="group && group.category == 'conversation'">
+        <nb-label class="my-form-label" :style="{marginTop: 5, marginLeft: 10, marginBottom: 5}">Conversation</nb-label>
+
+        <nb-list>
+          <nb-list-item v-for="m in group.members">
+            <nb-text>{{m.fullName}} <nb-text v-if="m.id == userId">(Me)</nb-text></nb-text>
+          </nb-list-item>
+        </nb-list>
+
+        <nb-spinner v-if="waiting" />
+        <nb-button v-if="!waiting" block danger :style="{marginTop: 25}" v-bind:on-press="quitConversation">
           <nb-text>Quit</nb-text>
         </nb-button>
       </view>
@@ -258,6 +279,55 @@ export default {
           vm.waiting = false
         })
     },
+    getSwipeLeftComponet: function(member) {
+      return (
+        <Button success onPress={() => this.enterConversation(member)}>
+          <Icon active name="chatboxes" />
+        </Button>
+      );
+    },
+    enterConversation (member) {
+      if(member.id == this.userId)
+        return
+      var vm = this
+      Alert.alert(
+        'Start Conversation',
+        'Do you want to start direct conversation with ' + member.fullName + '?',
+        [
+          {text: 'Yes', onPress: () => vm.enterConversationConfirmed(member)},
+          {text: 'Cancel', style: 'cancel'},
+        ],
+        { cancelable: false }
+      )
+    },
+    enterConversationConfirmed (member) {
+      this.waiting = true
+      var vm = this
+      axios.post(xHTTPx + '/start_conversation', {userId: member.id})
+        .then(res => {
+          var group = res.data
+          store.commit('groups/updateGroup', group)
+          vm.$nextTick(function(){
+            vm.navigation.navigate('Group', {groupId: group.id})
+          })
+        })
+        .catch(function (error) {
+          vm.waiting = false
+          vm.showError('Failed to start conversation!')
+        })
+    },
+    quitConversation () {
+      var vm = this
+      Alert.alert(
+        'Quit Conversation',
+        'Are you sure to quit this conversation?',
+        [
+          {text: 'Yes', onPress: () => vm.quitConversationConfirmed()},
+          {text: 'Cancel', style: 'cancel'},
+        ],
+        { cancelable: false }
+      )
+    },
     getSwipeBodyComponet: function(fullName) {
       return (
         <View>
@@ -272,7 +342,33 @@ export default {
         </Button>
       );
     },
-
+    quitConversation () {
+      var vm = this
+      Alert.alert(
+        'Quit Conversation',
+        'Are you sure to quit this conversation?',
+        [
+          {text: 'Yes', onPress: () => vm.quitConversationConfirmed()},
+          {text: 'Cancel', style: 'cancel'},
+        ],
+        { cancelable: false }
+      )
+    },
+    quitConversationConfirmed () {
+      this.waiting = true
+      var vm = this
+      axios.post(xHTTPx + '/quit_conversation/' + vm.groupId, {userId: vm.userId})
+        .then(res => {
+          store.commit('groups/deleteGroup', vm.groupId)
+          vm.$nextTick(function(){
+            vm.navigation.navigate('PublicGroups')
+          })
+        })
+        .catch(function (error) {
+          vm.waiting = false
+          vm.showError('Failed to quit conversation!')
+        })
+    },
   },
   mounted () {
     this.$nextTick(function(){

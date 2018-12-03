@@ -94,7 +94,9 @@ export default {
         title: ''
       },
       newChat: {
-        opened: false
+        opened: false,
+        message: '',
+        groupId: null
       }
     }
   },
@@ -301,10 +303,24 @@ export default {
       this.webView.title = title
       this.webView.opened = true
     },
-    closeNewChat () {
+    closeNewChat (message, resp) {
+      this.message = message
+      console.log(resp)
+      if(resp){
+        var vm = this
+        var chats = this.buildChats ([resp[0]], [resp[1]])
+        console.log(chats)
+        store.commit('groups/pushGroupChats', {groupId: vm.groupId, chats: chats})
+        vm.$nextTick(function(){
+          store.commit('groups/setLastTimestamp', {groupId: vm.groupId, timestamp: vm.latestTimestamp})
+          setTimeout(vm.scrollToLatest, 100)
+        })
+      }
       this.newChat.opened = false
     },
     openNewChat () {
+      this.newChat.message = this.message
+      this.newChat.groupId = this.groupId
       this.newChat.opened = true
     },
     scrollToLatest () {

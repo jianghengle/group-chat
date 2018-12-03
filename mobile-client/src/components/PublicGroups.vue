@@ -9,26 +9,19 @@
           <nb-text>No public group found yet.</nb-text>
         </view>
         <view v-else>
-          <nb-card v-for="g in publicGroups" :key="'pub-' + g.id">
-            <nb-card-item header button :onPress="() => openGroup(g.id)">
+          <nb-list-item :style="{marginLeft: 0, paddingTop: 10, paddingBottom: 10}" v-for="g in publicGroups" :key="'pub-group-' + g.id"
+            :onPress="() => openGroup(g.id)" :onLongPress="() => handleLongPress(g)">
+            <nb-body>
               <nb-text>{{g.name}}</nb-text>
-              <nb-button primary small :style="{marginLeft: 'auto'}" v-if="!groups[g.id]" v-bind:on-press="() => joinGroup(g)">
+              <nb-text note :style="{marginTop: 3}">{{g.owner.fullName}}  |  {{g.membershipCount}}</nb-text>
+              <nb-text note :style="{marginTop: 3}">{{g.description}}</nb-text>
+            </nb-body>
+            <nb-right>
+              <nb-button transparent v-if="!groups[g.id]" v-bind:on-press="() => joinGroup(g)">
                 <nb-text>Join</nb-text>
               </nb-button>
-
-            </nb-card-item>
-            <nb-card-item :style="{marginTop: -15, marginBottom: -10}">
-              <nb-body>
-                <nb-text :style="{marginBottom: 5}">
-                  {{g.owner.fullName}}  |  {{g.membershipCount}}
-                </nb-text>
-                <nb-text>
-                  {{g.description}}
-                </nb-text>
-              </nb-body>
-            </nb-card-item>
-            <nb-card-item footer></nb-card-item>
-          </nb-card>
+            </nb-right>
+          </nb-list-item>
         </view>
 
       </nb-content>
@@ -38,7 +31,7 @@
 
 <script>
 import { Alert, CameraRoll } from "react-native";
-import { Toast } from "native-base";
+import { Toast, ActionSheet } from "native-base";
 import store from '../store'
 import axios from 'axios'
 import MyHeader from './MyHeader'
@@ -133,6 +126,40 @@ export default {
         })
         .catch(function (error) {
           vm.showError('Need to join the group first!')
+        })
+    },
+    handleLongPress (g) {
+      if(this.groups[g.id])
+        return
+
+      var btnActions = [{method: 'startConversation', arg: g.owner.id}]
+      var btnOptions = ['Contact with ' + g.owner.fullName]
+      btnOptions.push('Cancel')
+      ActionSheet.show(
+        {
+          options: btnOptions,
+          cancelButtonIndex: btnOptions.length - 1,
+        },
+        buttonIndex => {
+          var action = btnActions[buttonIndex]
+          if(action){
+            this[action.method](action.arg)
+          }
+        }
+      );
+    },
+    startConversation (userId) {
+      var vm = this
+      axios.post(xHTTPx + '/start_conversation', {userId: userId})
+        .then(res => {
+          var group = res.data
+          store.commit('groups/updateGroup', group)
+          vm.$nextTick(function(){
+            vm.navigation.navigate('Group', {groupId: group.id})
+          })
+        })
+        .catch(function (error) {
+          vm.showError('Failed to start conversation!')
         })
     },
   },

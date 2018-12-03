@@ -44,8 +44,11 @@ export default {
         return 'Sign In'
       if(this.route.routeName == 'PublicGroups')
         return 'Public Groups'
-      if(this.route.routeName == 'Group' || this.route.routeName == 'GroupDetail')
-        return store.state.groups.groups[this.route.params.groupId].name
+      if(this.route.routeName == 'Group' || this.route.routeName == 'GroupDetail'){
+        var group = store.state.groups.groups[this.route.params.groupId]
+        if(group)
+          return (group.category == 'conversation' && group.name == '__') ? 'Yourself Only!' : group.name
+      }
       if(this.route.routeName == 'AddGroup')
         return 'Add Group'
       return 'Header'

@@ -14,7 +14,7 @@
     </nb-header>
 
     <nb-content padder>
-      <camera-roll-picker :callback="getSelectedImages" />
+      <camera-roll-picker :assetType="'All'" :selectSingleItem="true" :callback="getSelectedImages" />
       
     </nb-content>
 
@@ -53,8 +53,8 @@ export default {
     close () {
       this.closeAlbum()
     },
-    getSelectedImages (images) {
-      console.log('here1')
+    getSelectedImages (images, current) {
+      this.closeAlbum(current)
     }
   }
 }

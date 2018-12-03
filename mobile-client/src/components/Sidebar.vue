@@ -5,12 +5,12 @@
       
       <nb-list v-if="token">
         <nb-list-item button noBorder :selected="route.routeName == 'User'" :onPress="() => navigation.navigate('User')">
-          <nb-left>
+          <nb-left :style="{flex: 1}">
             <nb-icon active name="person" class="sidebar-icon" />
             <nb-text>
               {{userFullName}}
             </nb-text>
-            <nb-icon active name="exit" class="extra-icon" :style="{color: '#df2736'}" :onPress="signOut" />
+            <nb-icon name="exit" class="extra-icon" :style="{color: '#df2736', fontSize: 26}" :onPress="signOut" />
           </nb-left>
         </nb-list-item>
 
@@ -51,7 +51,7 @@
           class="second-level-nav" :onPress="() => openGroup(g.id)">
           <nb-left>
             <nb-text>
-              {{g.name}}
+              {{g.name == '__' ? 'Yourself Only!' : g.name}}
             </nb-text>
           </nb-left>
         </nb-list-item>
@@ -189,9 +189,9 @@ export default {
 }
 
 .extra-icon {
-  font-size: 20;
-  margin-left: 10;
-  margin-top: 4;
+  font-size: 22;
+  margin-left: 15;
+  margin-top: 3;
 }
 
 .second-level-nav {
