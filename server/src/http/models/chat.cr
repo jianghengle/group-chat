@@ -107,8 +107,15 @@ module MyServer
       end
 
       def self.get_latest_messages(groups)
+        return [] of Chat if groups.empty?
+
         group_ids = groups.map { |g| g.id.to_s }
-        timestamps = groups.map { |g| g.timestamp.to_s }
+        timestamps = []
+        groups.each do |g|
+          timestamps << g.timestamp.to_s unless g.timestamp.nil?
+        end
+        return [] of Chat if timestamps.empty?
+
         query = Query.where(:group_id, group_ids).where(:timestamp, timestamps)
         items = Repo.all(Chat, query)
         return [] of Chat if items.nil?

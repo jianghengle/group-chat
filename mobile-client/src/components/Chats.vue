@@ -169,7 +169,8 @@ export default {
   },
   methods: {
     getChats () {
-      var url = xHTTPx + '/get_latest_chats/' + this.groupId
+      var chatNum = 30
+      var url = xHTTPx + '/get_latest_chats/' + this.groupId + '/' + chatNum
       if(this.latestTimestamp){
         url = xHTTPx + '/get_chats_since/' + this.groupId + '/' + this.latestTimestamp
       }
@@ -255,13 +256,14 @@ export default {
     },
     loadOldChats () {
       this.loadingHistory = true
+      var chatNum = 30
       var vm = this
-      var url = xHTTPx + '/get_chats_before/' + this.groupId + '/' + this.oldestTimestamp
+      var url = xHTTPx + '/get_chats_before/' + this.groupId + '/' + this.oldestTimestamp + '/' + chatNum
       axios.get(url)
         .then(res => {
           var resp = res.data
           var chats = this.buildChats(resp[0], resp[1])
-          if(chats.length < 100){
+          if(chats.length < chatNum){
             store.commit('groups/setHistoryLoaded', vm.groupId)
           }
           store.commit('groups/prependGroupChats', {groupId: vm.groupId, chats: chats})

@@ -17,7 +17,8 @@ import App from "../App.vue";
 // registering all native-base components to the global scope of the Vue
 Vue.use(VueNativeBase);
 
-global.xHTTPx = 'http://glodet.nebraska.edu:9000';
+global.xHTTPx = 'https://glodet.nebraska.edu:9000';
+global.xWEBSOCKETx = 'wss://glodet.nebraska.edu:9000';
 
 import store from '../store'
 

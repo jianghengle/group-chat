@@ -6,7 +6,7 @@
       <nb-list v-if="token">
         <nb-list-item button noBorder :selected="route.routeName == 'User'" :onPress="() => navigation.navigate('User')">
           <nb-left :style="{flex: 1}">
-            <nb-icon active name="person" class="sidebar-icon" />
+            <nb-icon name="person" class="sidebar-icon" />
             <nb-text>
               {{userFullName}}
             </nb-text>
@@ -16,16 +16,16 @@
 
         <nb-list-item button noBorder :selected="route.routeName == 'PublicGroups'" :onPress="() => navigation.navigate('PublicGroups')">
           <nb-left>
-            <nb-icon active name="search" class="sidebar-icon" />
+            <nb-icon name="search" class="sidebar-icon" />
             <nb-text>Public Groups</nb-text>
           </nb-left>
         </nb-list-item>
 
         <nb-list-item button noBorder :selected="route.routeName == 'AddGroup'" :onPress="() => navigation.navigate('AddGroup')">
           <nb-left>
-            <nb-icon active name="people" class="sidebar-icon" />
+            <nb-icon name="people" class="sidebar-icon" />
             <nb-text>My Groups</nb-text>
-            <nb-icon active name="add-circle" class="extra-icon" />
+            <nb-icon name="add-circle" class="extra-icon" />
           </nb-left>
         </nb-list-item>
 
@@ -33,15 +33,16 @@
           :selected="(route.routeName=='Group' || route.routeName=='GroupDetail') && route.params.groupId==g.id"
           class="second-level-nav" :onPress="() => openGroup(g.id)">
           <nb-left>
-            <nb-text>
+            <nb-text :class="{'text-bold': (g.timestamp && (!g.userTimestamp || g.userTimestamp < g.timestamp))}">
               {{g.name}}
             </nb-text>
+            <nb-icon active name="chatbubbles" class="extra-icon" v-if="(g.timestamp && (!g.userTimestamp || g.userTimestamp < g.timestamp))" />
           </nb-left>
         </nb-list-item>
 
         <nb-list-item button noBorder>
           <nb-left>
-            <nb-icon active name="chatboxes" class="sidebar-icon" />
+            <nb-icon name="chatboxes" class="sidebar-icon" />
             <nb-text>Direct Messages</nb-text>
           </nb-left>
         </nb-list-item>
@@ -50,9 +51,10 @@
           :selected="(route.routeName=='Group' || route.routeName=='GroupDetail') && route.params.groupId==g.id"
           class="second-level-nav" :onPress="() => openGroup(g.id)">
           <nb-left>
-            <nb-text>
+            <nb-text :class="{'text-bold': (g.timestamp && (!g.userTimestamp || g.userTimestamp < g.timestamp))}">
               {{g.name == '__' ? 'Yourself Only!' : g.name}}
             </nb-text>
+            <nb-icon active name="chatbubbles" class="extra-icon" v-if="(g.timestamp && (!g.userTimestamp || g.userTimestamp < g.timestamp))" />
           </nb-left>
         </nb-list-item>
         
@@ -115,6 +117,7 @@ export default {
       if(val){
         axios.defaults.headers.common['Authorization'] = this.token
         this.requestGroups()
+        this.connectWebSocket()
       }else{
         delete axios.defaults.headers.common['Authorization']
         store.commit('groups/reset')
@@ -159,12 +162,54 @@ export default {
     },
     openGroup (groupId) {
       this.navigation.navigate('Group', {groupId: groupId})
-    }
+    },
+    connectWebSocket () {
+      store.commit('user/setWebSocket', 'Connecting...')
+      var vm = this
+      var url = xWEBSOCKETx + '/?token=' +this.token
+      this.ws = new WebSocket(url)
+      this.ws.onopen = function () {
+        console.log('ws opened')
+        vm.requestGroups()
+        store.commit('user/setWebSocket', 'Connected')
+        setTimeout(vm.keepWebSocketActive, 60000)
+      }
+      this.ws.onmessage = function (evt) {
+        var msg = evt.data
+        var obj = JSON.parse(msg)
+        vm[obj[0]](obj[1])
+      }
+      this.ws.onclose = function () {
+        console.log('ws closed')
+        vm.ws = null
+        if(vm.token){
+          console.log('try to reconnect in 2 secs')
+          setTimeout(vm.connectWebSocket, 2000)
+        }
+      }
+    },
+    keepWebSocketActive () {
+      if(this.ws){
+        this.ws.send('')
+        setTimeout(this.keepWebSocketActive, 60000)
+      }
+    },
+    pullGroup (groupId) {
+      axios.get(xHTTPx + '/get_group/' + groupId)
+        .then(res => {
+          var group = res.data
+          store.commit('groups/updateGroup', group)
+        })
+        .catch(function (error) {
+          store.commit('groups/deleteGroup', groupId)
+        })
+    },
   },
   created () {
     if(this.token) {
       axios.defaults.headers.common['Authorization'] = this.token
       this.requestGroups()
+      this.connectWebSocket()
     }
   }
 };
@@ -197,6 +242,10 @@ export default {
 .second-level-nav {
   margin-left: 47;
   margin-top: -10;
+}
+
+.text-bold {
+  font-weight: 700;
 }
 
 </style>
