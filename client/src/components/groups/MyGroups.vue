@@ -84,8 +84,10 @@ export default {
         this.myGroups = resp[0].map(function(g){
           g.owner = userMap[g.ownerId]
           g.latestChat = chatMap[g.id]
-          var latestMessage = g.latestChat.message ? g.latestChat.message : "..."
-          g.latestMessage = g.latestChat.user.fullName + ": " + latestMessage
+          if(g.latestChat){
+            var latestMessage = g.latestChat.message ? g.latestChat.message : "..."
+            g.latestMessage = g.latestChat.user.fullName + ": " + latestMessage
+          }
           return g
         })
         console.log(this.myGroups)

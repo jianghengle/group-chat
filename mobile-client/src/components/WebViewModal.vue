@@ -4,7 +4,7 @@
       <nb-left>
       </nb-left>
       <nb-body>
-        <nb-title>{{title}}</nb-title>
+        <nb-title selectable>{{title}}</nb-title>
       </nb-body>
       <nb-right>
         <nb-button transparent :onPress="close">

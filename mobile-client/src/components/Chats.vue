@@ -307,11 +307,9 @@ export default {
     },
     closeNewChat (message, resp) {
       this.message = message
-      console.log(resp)
       if(resp){
         var vm = this
         var chats = this.buildChats ([resp[0]], [resp[1]])
-        console.log(chats)
         store.commit('groups/pushGroupChats', {groupId: vm.groupId, chats: chats})
         vm.$nextTick(function(){
           store.commit('groups/setLastTimestamp', {groupId: vm.groupId, timestamp: vm.latestTimestamp})

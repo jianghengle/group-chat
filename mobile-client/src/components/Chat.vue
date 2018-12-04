@@ -13,11 +13,15 @@
 
     <nb-list-item avatar :style="{marginLeft: 0, marginTop: isContinued ? -15 : 0}" :onLongPress="handleLongPress">
       <nb-left :style="{paddingTop: 10}">
-        <nb-thumbnail small :source="isContinued ? {} : logo" :style="{borderRadius: 3}"/>
+        <touchable-without-feedback :onPress="handleClickUser">
+          <nb-thumbnail small :source="isContinued ? {} : logo" :style="{borderRadius: 3}" />
+        </touchable-without-feedback>
       </nb-left>
       <nb-body :style="{marginLeft: 8, borderColor: 'transparent', paddingTop: 8, paddingBottom: 8}">
         <nb-text v-if="!isContinued" :style="{fontWeight: '700', color: '#363636'}">{{chat1.user.fullName}}  <nb-text :style="{fontWeight: '300', fontSize: 12}" note>{{chat1.timeLabel}}</nb-text></nb-text>
-        <nb-text :style="{color: '#363636'}">{{chat1.message}}</nb-text>
+        <touchable-without-feedback :onPress="handleClickMessage">
+          <nb-text :style="{color: '#363636'}">{{chat1.message}}</nb-text>
+        </touchable-without-feedback>
         <view v-if="chat1.downloadLink">
           <view v-if="chat1.fileType=='image'">
             <touchable-without-feedback :onPress="showImageViewFromHere">
@@ -41,14 +45,14 @@
 </template>
 
 <script>
-import { Dimensions } from "react-native";
-import { Alert } from "react-native";
+import { Dimensions, Clipboard, Alert } from "react-native";
 import { ActionSheet, Toast } from "native-base";
 import store from '../store'
 import axios from 'axios'
 import logo from "../../assets/128x128.png";
 //import { Video } from 'expo';
 import moment from 'moment';
+import * as linkify from 'linkifyjs';
 
 const deviceWidth = Dimensions.get("window").width;
 
@@ -188,9 +192,9 @@ export default {
     handleLongPress () {
       var btnActions = []
       var btnOptions = []
-      if(this.chat1.user.id != this.userId){
-        btnActions.push({method: 'startConversation', arg: this.chat1.user.id})
-        btnOptions.push('Message with ' + this.chat1.user.fullName)
+      if(this.chat1.message){
+        btnActions.push({method: 'saveToClipboard', arg: this.chat1.message})
+        btnOptions.push('Copy text')
       }
       this.otherGroups.forEach(function(g){
         btnActions.push({method: 'forwardMessage', arg: g})
@@ -210,9 +214,12 @@ export default {
         }
       );
     },
-    startConversation (userId) {
+    saveToClipboard (message) {
+      Clipboard.setString(message)
+    },
+    startConversation () {
       var vm = this
-      axios.post(xHTTPx + '/start_conversation', {userId: userId})
+      axios.post(xHTTPx + '/start_conversation', {userId: vm.chat1.user.id})
         .then(res => {
           var group = res.data
           store.commit('groups/updateGroup', group)
@@ -233,6 +240,48 @@ export default {
         .catch(function (error) {
           vm.showError('Failed to forward message!')
         })
+    },
+    handleClickUser () {
+      if(this.chat1.user.id == this.userId)
+        return
+      var vm = this
+      Alert.alert(
+        'Start Direct Conversation',
+        'Are you sure to start the direct conversation with ' + vm.chat1.user.fullName + '?',
+        [
+          {text: 'Yes', onPress: () => vm.startConversation()},
+          {text: 'Cancel', style: 'cancel'},
+        ],
+        { cancelable: false }
+      )
+    },
+    handleClickMessage () {
+      var links = linkify.find(this.chat1.message)
+      if(links.length){
+        var btnActions = []
+        var btnOptions = []
+        var vm = this
+        links.forEach(function(link){
+          btnActions.push({method: 'openLink', arg: link})
+          btnOptions.push('Open ' + link.value)
+        })
+        btnOptions.push('Cancel')
+        ActionSheet.show(
+          {
+            options: btnOptions,
+            cancelButtonIndex: btnOptions.length - 1,
+          },
+          buttonIndex => {
+            var action = btnActions[buttonIndex]
+            if(action){
+              this[action.method](action.arg)
+            }
+          }
+        );
+      }
+    },
+    openLink (link) {
+      this.openWebView(link.href, link.value)
     }
   },
   mounted () {
