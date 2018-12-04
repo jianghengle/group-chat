@@ -110,7 +110,7 @@ module MyServer
         return [] of Chat if groups.empty?
 
         group_ids = groups.map { |g| g.id.to_s }
-        timestamps = []
+        timestamps = [] of String
         groups.each do |g|
           timestamps << g.timestamp.to_s unless g.timestamp.nil?
         end
