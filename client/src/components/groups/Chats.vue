@@ -45,6 +45,8 @@
 <script>
 import DateForm from 'dateformat'
 import Chat from './Chat'
+import * as linkify from 'linkifyjs';;
+import linkifyHtml from 'linkifyjs/html';
 
 
 export default {
@@ -160,7 +162,8 @@ export default {
   },
   methods: {
     getChats () {
-      var url = xHTTPx + '/get_latest_chats/' + this.groupId
+      var chatNum = 80
+      var url = xHTTPx + '/get_latest_chats/' + this.groupId + '/' + chatNum
       if(this.latestTimestamp){
         url = xHTTPx + '/get_chats_since/' + this.groupId + '/' + this.latestTimestamp
       }
@@ -190,6 +193,7 @@ export default {
         userMap[u.id] = u
       })
       return chats.map(function(c){
+        c.htmlMessage = linkifyHtml(c.message, {defaultProtocol: 'https'})
         c.user = userMap[c.userId]
         var d = new Date(c.timestamp)
         c.timeLabel = DateForm(d, 'h:MM TT')
@@ -217,7 +221,6 @@ export default {
         var resp = response.body
         var chats = this.buildChats ([resp[0]], [resp[1]])
         this.$store.commit('groups/pushGroupChats', {groupId: this.groupId, chats: chats})
-        this.message = ''
         this.$nextTick(function(){
           this.$store.commit('groups/setLastTimestamp', {groupId: this.groupId, timestamp: this.latestTimestamp})
           this.scrollToLatest()
@@ -225,17 +228,29 @@ export default {
       },response => {
         this.error = 'Failed to send message!'
       })
+      this.message = ''
     },
     openUploadModal () {
-      this.$store.commit('modals/openUploadFileModal', this.message)
+      var callback = {method: this.doneUploadFile, context: this}
+      this.$store.commit('modals/openUploadFileModal', {message: this.message, callback: callback})
+    },
+    doneUploadFile (chat, user) {
+      var chats = this.buildChats ([chat], [user])
+      this.$store.commit('groups/pushGroupChats', {groupId: this.groupId, chats: chats})
+      this.message = ''
+      this.$nextTick(function(){
+        this.$store.commit('groups/setLastTimestamp', {groupId: this.groupId, timestamp: this.latestTimestamp})
+        this.scrollToLatest()
+      })
     },
     loadOldChats () {
-      var url = xHTTPx + '/get_chats_before/' + this.groupId + '/' + this.oldestTimestamp
+      var chatNum = 80
+      var url = xHTTPx + '/get_chats_before/' + this.groupId + '/' + this.oldestTimestamp + '/' + chatNum
       this.waiting = true
       this.$http.get(url).then(response => {
         var resp = response.body
         var chats = this.buildChats(resp[0], resp[1])
-        if(chats.length < 100){
+        if(chats.length < chatNum){
           this.$store.commit('groups/setHistoryLoaded', this.groupId)
         }
         this.$store.commit('groups/prependGroupChats', {groupId: this.groupId, chats: chats})

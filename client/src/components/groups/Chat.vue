@@ -40,9 +40,9 @@
           <p>
             <span v-if="!isContinued">
               <strong :class="{'clickable': group.category!='conversation' && chat1.user.id!=userId}" @click="openDirectConversationModal(chat1.user)">{{chat1.user.fullName}}</strong>
-              <small>{{chat1.timeLabel}}</small><br>
+              <small>{{chat1.timeLabel}}</small><br/>
             </span>
-            <span v-if="chat1.message" class="chat-message">{{chat1.message}}<br></span>
+            <span v-if="chat1.message" class="chat-message" v-html="chat1.htmlMessage"></span><br/>
             <span v-if="chat1.downloadLink">
               <span v-if="chat1.fileType=='image'"><img class="chat-image clickable" :src="chat1.downloadLink" @click="openImageModal(chat1.downloadLink)" /></span>
               <span>

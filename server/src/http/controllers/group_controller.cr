@@ -56,6 +56,34 @@ module MyServer
         end
       end
 
+      def get_my_groups(ctx)
+        begin
+          user = verify_token(ctx)
+          groups = Group.get_my_groups(user)
+          group_ids = groups.map { |g| g.id }
+          memberships = Membership.get_memberships_by_group_ids(group_ids)
+          counts = {} of String => Int32
+          memberships.each do |m|
+            group_id = m.group_id.to_s
+            counts[group_id] = 0 unless counts.has_key?(group_id)
+            counts[group_id] += 1
+          end
+          groups_json = "[" + groups.join(", ") { |g| g.to_json(counts.has_key?(g.id.to_s) ? counts[g.id.to_s] : 0) } + "]"
+          chats = Chat.get_latest_messages(groups)
+          chats_json = "[" + chats.join(", ") { |c| c.to_json } + "]"
+          owner_ids = groups.map { |g| g.owner_id }
+          chatter_ids = chats.map { |c| c.user_id }
+          user_ids = owner_ids | chatter_ids
+          users = User.get_users_by_ids(user_ids)
+          users_json = "[" + users.join(", ") { |u| u.to_json } + "]"
+          "[#{groups_json}, #{chats_json}, #{users_json}]"
+        rescue ex : InsufficientParameters
+          error(ctx, "Not all required parameters were present")
+        rescue e : Exception
+          error(ctx, e.message.to_s)
+        end
+      end
+
       def get_group(ctx)
         begin
           user = verify_token(ctx)

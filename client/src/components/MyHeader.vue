@@ -72,6 +72,8 @@ export default {
         return 'Public Groups'
       if(this.routeName == 'AddGroup')
         return 'Add Group'
+      if(this.routeName == 'MyGroups')
+        return 'My Groups'
       if(this.routeName == 'GroupPage' || this.routeName == 'GroupDetail'){
         var groupId = this.$route.params.groupId
         var group = this.$store.state.groups.groups[groupId]

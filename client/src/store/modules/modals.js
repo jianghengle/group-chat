@@ -9,7 +9,7 @@ export const state = {
     callback: null
   },
   addGroupModal: {opened: false},
-  uploadFileModal: {opened: false, message: ''},
+  uploadFileModal: {opened: false, message: '', callback: null},
   imageModal: {opened: false, source: ''},
   directConversationModal: {opened: false, user: {}},
 }
@@ -49,13 +49,15 @@ export const mutations = {
     state.addGroupModal.opened = false
   },
 
-  openUploadFileModal (state, message) {
-    state.uploadFileModal.message = message
+  openUploadFileModal (state, obj) {
+    state.uploadFileModal.message = obj.message
+    state.uploadFileModal.callback = obj.callback
     state.uploadFileModal.opened = true
   },
 
   closeUploadFileModal (state) {
     state.uploadFileModal.message = ''
+    state.uploadFileModal.callback = null
     state.uploadFileModal.opened = false
   },
 

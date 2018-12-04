@@ -63,6 +63,15 @@ module MyServer
         items.as(Array)
       end
 
+      def self.get_my_groups(user)
+        memberships = Membership.get_memberships_by_user_id(user.id)
+        group_ids = memberships.map { |m| m.group_id }
+        query = Query.where(:id, group_ids).where("category <> ?", ["conversation"])
+        items = Repo.all(Group, query)
+        return [] of Group if items.nil?
+        items.as(Array)
+      end
+
       def self.add_group(group)
         changeset = Repo.insert(group)
         raise changeset.errors.to_s unless changeset.valid?

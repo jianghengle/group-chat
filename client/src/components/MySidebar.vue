@@ -8,10 +8,14 @@
               <v-icon name="user"/>
             </span>
             {{fullName}}
+            <span class="icon is-small sign-out-icon" @click.stop="signOut">
+              <v-icon name="sign-out-alt"/>
+            </span>
           </a>
         </li>
+        <hr class="separator"/>
         <li>
-          <a :class="{'is-active': routePath=='/'}" @click="switchRoute('/')">
+          <a :class="{'is-active': routePath=='/public_groups'}" @click="switchRoute('/public_groups')">
             <span class="icon">
               <v-icon name="search"/>
             </span>
@@ -20,14 +24,14 @@
         </li>
         <li>
           <div>
-            <a :class="{'is-active': routePath=='/add_group'}" @click="switchRoute('/add_group')">
+            <a :class="{'is-active': routePath=='/' || routePath=='/add_group'}" @click="switchRoute('/')">
               <span>
                 <span class="icon">
                   <v-icon name="user-friends"/>
                 </span>
                 My Groups
-                <span class="icon">
-                  <v-icon name="plus" class="plus-icon"/>
+                <span class="icon is-small plus-icon" @click.stop="switchRoute('/add_group')">
+                  <v-icon name="plus"/>
                 </span>
               </span>
            </a>
@@ -67,7 +71,7 @@
 </template>
 
 <script>
-
+import Vue from 'vue'
 
 export default {
   name: 'my-sidebar',
@@ -115,6 +119,23 @@ export default {
     },
     closeSidebar () {
       this.$store.commit('ui/setShowSidebar', false)
+    },
+    signOut () {
+      this.$store.commit('modals/openConfirmModal', {
+        title: 'Sign Out',
+        message: 'Are you sure to sign out?',
+        button: 'Yes, I am sure!',
+        callback: {
+          method: this.signOutConfirmed,
+          context: this,
+          args: []
+        }
+      })
+    },
+    signOutConfirmed () {
+      delete Vue.http.headers.common['Authorization']
+      this.$store.commit('user/reset')
+      this.$store.commit('groups/reset')
     }
   }
 }
@@ -123,8 +144,16 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
 
+.sign-out-icon {
+  margin-left: 15px;
+  position: relative;
+  top: 2px;
+}
+
 .plus-icon {
-  height: 12px;
+  margin-left: 15px;
+  position: relative;
+  top: 2px;
 }
 
 .close-button {
@@ -138,6 +167,11 @@ export default {
   margin-top: 0px;
   margin-bottom: 0px;
   margin-left: 25px;
+}
+
+.separator {
+  margin-top: 6px;
+  margin-bottom: 10px;
 }
 
 </style>

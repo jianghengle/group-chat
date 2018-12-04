@@ -44,6 +44,10 @@ module MyServer
         HttpAPI::GroupController.get_public_groups(env)
       end
 
+      get "/get_my_groups" do |env|
+        HttpAPI::GroupController.get_my_groups(env)
+      end
+
       get "/get_group/:group_id" do |env|
         HttpAPI::GroupController.get_group(env)
       end
@@ -80,7 +84,7 @@ module MyServer
         HttpAPI::GroupController.quit_conversation(env)
       end
 
-      get "/get_latest_chats/:group_id" do |env|
+      get "/get_latest_chats/:group_id/:chat_num" do |env|
         HttpAPI::ChatController.get_latest_chats(env)
       end
 
@@ -88,7 +92,7 @@ module MyServer
         HttpAPI::ChatController.get_chats_since(env)
       end
 
-      get "/get_chats_before/:group_id/:timestamp" do |env|
+      get "/get_chats_before/:group_id/:timestamp/:chat_num" do |env|
         HttpAPI::ChatController.get_chats_before(env)
       end
 
@@ -107,6 +111,10 @@ module MyServer
       ws "/" do |socket, env|
         unless WS::ClientStore.add_client(socket, env)
           socket.close
+        end
+
+        socket.on_message do |message|
+          WS::ClientStore.update_client(socket)
         end
 
         socket.on_close do

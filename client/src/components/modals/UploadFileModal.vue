@@ -75,6 +75,9 @@ export default {
     uploadFile () {
       if(this.waiting)
         return
+      if(!this.message && !this.file)
+        return
+
       this.waiting = true
       var formData = new FormData()
       formData.append('message', JSON.stringify(this.message))
@@ -83,8 +86,13 @@ export default {
       }
 
       this.$http.post(xHTTPx + '/add_chat_with_file/' + this.groupId, formData).then(response => {
+        var callback = this.$store.state.modals.uploadFileModal.callback
+        if(callback){
+          var method = callback.method
+          var context = callback.context
+          method.apply(context, response.body)
+        }
         this.waiting = false
-        this.error = ''
         this.close()
       }, response => {
         this.error = 'Failed to create file!'

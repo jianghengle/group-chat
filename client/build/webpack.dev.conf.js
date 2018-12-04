@@ -50,8 +50,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     new webpack.DefinePlugin({
       'process.env': require('../config/dev.env'),
       'xTARGETx': JSON.stringify(target),
-      'xHTTPx': JSON.stringify('http://localhost:3000'),
-      'xWEBSOCKETx': JSON.stringify('ws://localhost:3000')
+      'xHTTPx': JSON.stringify('http://localhost:9000'),
+      'xWEBSOCKETx': JSON.stringify('ws://localhost:9000')
     }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NamedModulesPlugin(), // HMR shows correct file names in console on update.

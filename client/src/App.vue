@@ -151,6 +151,7 @@ export default {
         console.log('ws opened')
         vm.requestGroups()
         vm.$store.commit('user/setWebSocket', 'Connected')
+        setTimeout(vm.keepWebSocketActive, 60000)
       }
       this.ws.onmessage = function (evt) {
         var msg = evt.data
@@ -162,8 +163,14 @@ export default {
         vm.ws = null
         if(vm.token){
           console.log('try to reconnect in 2 secs')
-          setTimeout(vm.connectWebSocket(), 2000)
+          setTimeout(vm.connectWebSocket, 2000)
         }
+      }
+    },
+    keepWebSocketActive () {
+      if(this.ws){
+        this.ws.send('')
+        setTimeout(this.keepWebSocketActive, 60000)
       }
     },
     pullGroup (groupId) {

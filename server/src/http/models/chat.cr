@@ -26,8 +26,8 @@ module MyServer
         end
       end
 
-      def self.get_latest_chats(group_id)
-        query = Query.where(group_id: group_id).order_by("timestamp DESC").limit(100)
+      def self.get_latest_chats(group_id, chat_num)
+        query = Query.where(group_id: group_id).order_by("timestamp DESC").limit(chat_num)
         items = Repo.all(Chat, query)
         return [] of Chat if items.nil?
         items.as(Array)
@@ -40,8 +40,8 @@ module MyServer
         items.as(Array)
       end
 
-      def self.get_chats_before(group_id, timestamp)
-        query = Query.where(group_id: group_id).where("timestamp < ?", [timestamp]).limit(100).order_by("timestamp DESC")
+      def self.get_chats_before(group_id, timestamp, chat_num)
+        query = Query.where(group_id: group_id).where("timestamp < ?", [timestamp]).limit(chat_num).order_by("timestamp DESC")
         items = Repo.all(Chat, query)
         return [] of Chat if items.nil?
         items.as(Array)
@@ -75,13 +75,16 @@ module MyServer
       end
 
       def self.add_chat_with_file(user_id, group_id, ctx)
-        attachment = Attachment.create_file(ctx)
+        result = Attachment.create_file(ctx)
+        message = result[0]
+        attachment = result[1]
+        raise "empty message" if (message.empty? && attachment.filename.nil?)
 
         chat = Chat.new
         chat.user_id = user_id
         chat.group_id = group_id
-        chat.message = attachment[0]
-        chat.attachment_key = attachment[1]
+        chat.message = message
+        chat.attachment_key = attachment.key.to_s unless attachment.filename.nil?
         chat.timestamp = Time.now.epoch_ms
 
         changeset = Repo.insert(chat)
@@ -95,12 +98,21 @@ module MyServer
         end
         raise "cannot get new id!" if chat_id.nil?
         chat.id = chat_id
-        chat
+        {chat, attachment}
       end
 
       def self.delete_all_by_group_id(group_id)
         query = Query.where(group_id: group_id)
         Repo.delete_all(Chat, query)
+      end
+
+      def self.get_latest_messages(groups)
+        group_ids = groups.map { |g| g.id.to_s }
+        timestamps = groups.map { |g| g.timestamp.to_s }
+        query = Query.where(:group_id, group_ids).where(:timestamp, timestamps)
+        items = Repo.all(Chat, query)
+        return [] of Chat if items.nil?
+        items.as(Array)
       end
     end
   end

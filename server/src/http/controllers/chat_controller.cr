@@ -11,10 +11,12 @@ module MyServer
           user = verify_token(ctx)
           group_id = get_param!(ctx, "group_id").to_i
           group = Group.get_group_by_id(group_id)
+          chat_num = get_param!(ctx, "chat_num").to_i
+          chat_num = 100 if (chat_num <= 0 || chat_num > 100)
           membership = Membership.get_membership_by_group_id_user_id(group_id, user.id)
           raise "cannot get group" if membership.nil?
 
-          chats = Chat.get_latest_chats(group_id)
+          chats = Chat.get_latest_chats(group_id, chat_num)
           Membership.update_timestamp(membership, chats)
           attachment_keys = chats.map { |c| c.attachment_key.nil? ? "" : c.attachment_key.to_s }
           attachment_map = Attachment.get_attachment_map(attachment_keys)
@@ -64,11 +66,13 @@ module MyServer
           user = verify_token(ctx)
           group_id = get_param!(ctx, "group_id").to_i
           group = Group.get_group_by_id(group_id)
+          chat_num = get_param!(ctx, "chat_num").to_i
+          chat_num = 100 if (chat_num <= 0 || chat_num > 100)
           membership = Membership.get_membership_by_group_id_user_id(group_id, user.id)
           raise "cannot get group" if membership.nil?
 
           timestamp = get_param!(ctx, "timestamp").to_i64
-          chats = Chat.get_chats_before(group_id, timestamp)
+          chats = Chat.get_chats_before(group_id, timestamp, chat_num)
           attachment_keys = chats.map { |c| c.attachment_key.nil? ? "" : c.attachment_key.to_s }
           attachment_map = Attachment.get_attachment_map(attachment_keys)
           chats_json = chats.join(",") { |c| c.to_json(attachment_map) }
@@ -115,11 +119,16 @@ module MyServer
           membership = Membership.get_membership_by_group_id_user_id(group_id, user.id)
           raise "cannot get group" if membership.nil?
 
-          chat = Chat.add_chat_with_file(user.id, group_id, ctx)
+          result = Chat.add_chat_with_file(user.id, group_id, ctx)
+          chat = result[0]
+          attachment = result[1]
+          attachment_map = {} of String => String
+          attachment_map[attachment.key.to_s] = attachment.filename.to_s unless attachment.filename.nil?
+          chat_json = chat.to_json(attachment_map)
           Membership.update_timestamp(membership, [chat])
           Group.update_timestamp(group, chat)
           MyServer::WS::ClientStore.pull_group(group_id)
-          "[#{chat.to_json}, #{user.to_json}]"
+          "[#{chat_json}, #{user.to_json}]"
         rescue ex : InsufficientParameters
           error(ctx, "Not all required parameters were present")
         rescue e : Exception

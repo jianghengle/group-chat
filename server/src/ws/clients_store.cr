@@ -35,6 +35,12 @@ module MyServer
         puts @@user_clients.keys
       end
 
+      def self.update_client(socket)
+        return unless @@socket_client.has_key?(socket.object_id)
+        client = @@socket_client[socket.object_id]
+        client.update_last_active
+      end
+
       def self.broadcast_message(user_ids, msg)
         user_ids.each do |user_id|
           next unless @@user_clients.has_key? user_id

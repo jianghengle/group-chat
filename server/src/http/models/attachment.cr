@@ -43,9 +43,11 @@ module MyServer
           end
         end
 
-        changeset = Repo.insert(attachment)
-        raise changeset.errors.to_s unless changeset.valid?
-        [message, attachment.key.to_s]
+        unless (attachment.filename.nil?)
+          changeset = Repo.insert(attachment)
+          raise changeset.errors.to_s unless changeset.valid?
+        end
+        {message, attachment}
       end
 
       def self.get_unique_filename(path, filename)

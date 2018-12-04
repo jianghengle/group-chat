@@ -5,6 +5,7 @@ import AddGroup from '@/components/AddGroup'
 import GroupPage from '@/components/groups/GroupPage'
 import GroupDetail from '@/components/groups/GroupDetail'
 import PublicGroups from '@/components/groups/PublicGroups'
+import MyGroups from '@/components/groups/MyGroups'
 
 Vue.use(Router)
 
@@ -12,6 +13,11 @@ export default new Router({
   routes: [
     {
       path: '/',
+      name: 'MyGroups',
+      component: MyGroups
+    },
+    {
+      path: '/public_groups',
       name: 'PublicGroups',
       component: PublicGroups
     },
