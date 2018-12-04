@@ -21,11 +21,11 @@
           </nb-left>
         </nb-list-item>
 
-        <nb-list-item button noBorder :selected="route.routeName == 'AddGroup'" :onPress="() => navigation.navigate('AddGroup')">
+        <nb-list-item button noBorder :selected="route.routeName == 'AddGroup'  || route.routeName == 'MyGroups'" :onPress="() => navigation.navigate('MyGroups')">
           <nb-left>
             <nb-icon name="people" class="sidebar-icon" />
             <nb-text>My Groups</nb-text>
-            <nb-icon name="add-circle" class="extra-icon" />
+            <nb-icon name="add-circle" class="extra-icon" :onPress="() => navigation.navigate('AddGroup')"/>
           </nb-left>
         </nb-list-item>
 

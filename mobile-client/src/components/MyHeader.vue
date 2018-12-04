@@ -12,6 +12,9 @@
       <nb-button transparent :onPress="goGroupDetail" v-if="route.routeName == 'Group'">
         <nb-icon active name="more" />
       </nb-button>
+      <nb-button transparent :onPress="goAddGroup" v-if="route.routeName == 'MyGroups'">
+        <nb-icon active name="add" />
+      </nb-button>
     </nb-right>
   </nb-header>
 </template>
@@ -51,6 +54,8 @@ export default {
       }
       if(this.route.routeName == 'AddGroup')
         return 'Add Group'
+      if(this.route.routeName == 'MyGroups')
+        return 'My Groups'
       return 'Header'
     }
   },
@@ -59,6 +64,8 @@ export default {
       if(this.route.routeName == 'GroupDetail'){
         var groupId = this.route.params.groupId
         this.navigation.navigate('Group', {groupId: groupId})
+      } else if(this.route.routeName == 'AddGroup'){
+        this.navigation.navigate('MyGroups')
       } else {
         this.navigation.navigate('DrawerOpen')
       }
@@ -66,6 +73,9 @@ export default {
     goGroupDetail () {
       var groupId = this.route.params.groupId
       this.navigation.navigate('GroupDetail', {groupId: groupId})
+    },
+    goAddGroup () {
+      this.navigation.navigate('AddGroup')
     }
   },
   created () {

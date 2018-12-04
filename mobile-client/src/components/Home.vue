@@ -62,7 +62,7 @@ export default {
         .then(res => {
           var user = res.data
           store.commit('user/setUser', user)
-          vm.navigation.navigate('PublicGroups')
+          vm.navigation.navigate('MyGroups')
         })
         .catch(function (error) {
           vm.showError('Failed to authorize user!')
@@ -87,7 +87,7 @@ export default {
           var user = JSON.parse(value)
           if(user.token){
             store.commit('user/setUser', user)
-            this.navigation.navigate('PublicGroups')
+            this.navigation.navigate('MyGroups')
           }
         }
         this.ready = true

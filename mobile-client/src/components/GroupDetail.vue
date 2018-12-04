@@ -219,7 +219,7 @@ export default {
       vm.waiting = true
       axios.post(xHTTPx + '/delete_group/' + vm.groupId)
         .then(res => {
-          vm.navigation.navigate('PublicGroups')
+          vm.navigation.navigate('MyGroups')
           store.commit('groups/deleteGroup', vm.groupId)
         })
         .catch(function (error) {
@@ -244,7 +244,7 @@ export default {
       vm.waiting = true
       axios.post(xHTTPx + '/quit_group/' + vm.groupId, {userId: vm.userId})
         .then(res => {
-          vm.navigation.navigate('PublicGroups')
+          vm.navigation.navigate('MyGroups')
           store.commit('groups/deleteGroup', vm.groupId)
         })
         .catch(function (error) {
@@ -361,7 +361,7 @@ export default {
         .then(res => {
           store.commit('groups/deleteGroup', vm.groupId)
           vm.$nextTick(function(){
-            vm.navigation.navigate('PublicGroups')
+            vm.navigation.navigate('MyGroups')
           })
         })
         .catch(function (error) {
