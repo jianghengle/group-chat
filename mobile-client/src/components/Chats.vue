@@ -26,6 +26,7 @@
       :images="images" :imageIndex="imageViewIndex"
       :isVisible="isImageViewVisible"
       :renderFooter="renderImageViewFooter"
+      :onClose="closeImageView"
     />
 
     <web-view-modal :webView="webView" :closeWebView="closeWebView"></web-view-modal>
@@ -287,6 +288,9 @@ export default {
         this.imageViewIndex = index
         this.isImageViewVisible = true
       }
+    },
+    closeImageView () {
+      this.isImageViewVisible = false
     },
     renderImageViewFooter: function(image) {
       return (

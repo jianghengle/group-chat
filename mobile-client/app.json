@@ -2,7 +2,7 @@
   "expo": {
     "sdkVersion": "27.0.0",
     "icon": "./assets/nblogo.png",
-    "slug": "kitchensinkvuenative",
+    "slug": "mygroupchatvuenative",
     "loading": {
       "hideExponentText": true,
       "backgroundImage": "./assets/splashscreen.png"
@@ -10,12 +10,17 @@
     "orientation": "portrait",
     "primaryColor": "#cccccc",
     "packagerOpts": {
-      "assetExts": ["ttf"]
+      "assetExts": [
+        "ttf"
+      ]
     },
     "androidStatusBarColor": "#334393",
     "androidStatusBar": {
       "barStyle": "light-content",
       "backgroundColor": "#334393"
-    }
+    },
+    "name": "my-group-chat-vue-native",
+    "version": "0.1.0",
+    "description": "The mobile client of my hobby group chat app like Slack."
   }
 }
