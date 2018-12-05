@@ -12,12 +12,15 @@ module MyServer
       def send_message(msg)
         begin
           span = Time.now - @last_active
-          raise "last active expired" if span.total_seconds > 100
-          @socket.send(msg)
-        rescue e : Exception
-          puts "close socket"
-          puts e.message.to_s
-          @socket.close
+          if span.total_seconds > 100
+            puts "socket expired"
+            ClientStore.remove_client(@socket)
+            @socket.close
+          else
+            @socket.send(msg)
+          end
+        rescue
+          puts "failed to send or close socket"
         end
       end
 
