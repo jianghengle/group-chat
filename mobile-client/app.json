@@ -2,7 +2,7 @@
   "expo": {
     "sdkVersion": "27.0.0",
     "icon": "./assets/nblogo.png",
-    "slug": "mygroupchatvuenative",
+    "slug": "mygroupchat",
     "loading": {
       "hideExponentText": true,
       "backgroundImage": "./assets/splashscreen.png"
@@ -19,7 +19,7 @@
       "barStyle": "light-content",
       "backgroundColor": "#334393"
     },
-    "name": "my-group-chat-vue-native",
+    "name": "my-group-chat",
     "version": "0.1.0",
     "description": "The mobile client of my hobby group chat app like Slack."
   }
