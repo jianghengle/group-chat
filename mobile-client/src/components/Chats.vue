@@ -39,14 +39,14 @@
           <nb-text :style="{fontWeight: '500', fontSize: 28, color: '#7a7a7a'}">+</nb-text>
         </nb-button>
         <text-input
-          v-model="message"
           keyboardType="default"
           returnKeyType="done"
-          v-bind:onChangeText="inputTextChanged"
+          v-bind:onChangeText="(text) => inputTextChanged(text)"
           multiline
           class="message-input"
           underline-color-android="transparent"
-          placeholder="Type here" />
+          placeholder="Type here"
+          :value="emptyMessage" />
       </view>
     </keyboard-avoiding-view>
   </nb-container>
@@ -84,6 +84,7 @@ export default {
   },
   data: function() {
     return {
+      emptyMessage: '',
       message: '',
       loadingChats: false,
       loadingHistory: false,
@@ -227,9 +228,10 @@ export default {
         position: "top"
       })
     },
-    inputTextChanged () {
-      if(!this.message)
+    inputTextChanged (text) {
+      if(!text)
         return
+      this.message = text
       var lastChar = this.message[this.message.length-1]
       if(lastChar == '\n'){
         this.sendMessage()
@@ -244,9 +246,9 @@ export default {
             var resp = res.data
             var chats = this.buildChats ([resp[0]], [resp[1]])
             store.commit('groups/pushGroupChats', {groupId: vm.groupId, chats: chats})
-            vm.$nextTick(function(){
+            setTimeout(function(){
               store.commit('groups/setLastTimestamp', {groupId: vm.groupId, timestamp: vm.latestTimestamp})
-              setTimeout(vm.scrollToLatest, 100)
+              setTimeout(vm.scrollToLatest)
             })
           })
           .catch(function (error) {
@@ -254,6 +256,15 @@ export default {
           })
       }
       this.message = ''
+      if(this.emptyMessage){
+        this.emptyMessage = ''
+      }else{
+        this.emptyMessage = ' '
+        var vm = this
+        setTimeout(function(){
+          vm.emptyMessage = ''
+        })
+      }
     },
     loadOldChats () {
       this.loadingHistory = true
@@ -310,15 +321,14 @@ export default {
       this.webView.opened = true
     },
     closeNewChat (message, resp) {
-      this.message = message
       if(resp){
         var vm = this
         var chats = this.buildChats ([resp[0]], [resp[1]])
         store.commit('groups/pushGroupChats', {groupId: vm.groupId, chats: chats})
-        vm.$nextTick(function(){
+        setTimeout(function(){
           store.commit('groups/setLastTimestamp', {groupId: vm.groupId, timestamp: vm.latestTimestamp})
           setTimeout(vm.scrollToLatest, 100)
-        })
+        }, 100)
       }
       this.newChat.opened = false
     },

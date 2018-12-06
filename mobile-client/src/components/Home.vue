@@ -11,7 +11,7 @@
           <nb-form>
             <nb-item>
               <nb-icon active name="person" />
-              <nb-input placeholder="Email" v-model="email" />
+              <nb-input placeholder="Email" keyboardType="email-address" v-model="email" />
             </nb-item>
             <nb-item>
               <nb-icon active name="lock" />
