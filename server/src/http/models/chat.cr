@@ -59,7 +59,7 @@ module MyServer
         chat.group_id = group_id
         chat.message = message
         chat.attachment_key = attachment_key
-        chat.timestamp = Time.now.epoch_ms
+        chat.timestamp = Time.now.to_unix_ms
         changeset = Repo.insert(chat)
         raise changeset.errors.to_s unless changeset.valid?
 
@@ -85,7 +85,7 @@ module MyServer
         chat.group_id = group_id
         chat.message = message
         chat.attachment_key = attachment.key.to_s unless attachment.filename.nil?
-        chat.timestamp = Time.now.epoch_ms
+        chat.timestamp = Time.now.to_unix_ms
 
         changeset = Repo.insert(chat)
         raise changeset.errors.to_s unless changeset.valid?

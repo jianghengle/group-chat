@@ -6,15 +6,15 @@ shards:
 
   crecto:
     github: crecto/crecto
-    commit: 05079254957b3e2d7315cab2c424603c42a91c6f
+    version: 0.10.1
 
   crecto-admin:
-    github: Crecto/crecto-admin
-    version: 0.2.0
+    github: jianghengle/crecto-admin
+    commit: 7c3ad1ee7e72709e71d821fc528ad080a40f939b
 
   db:
     github: crystal-lang/crystal-db
-    version: 0.5.0
+    version: 0.5.1
 
   exception_page:
     github: crystal-loot/exception_page
@@ -22,15 +22,15 @@ shards:
 
   kemal:
     github: kemalcr/kemal
-    version: 0.24.0
+    version: 0.25.1
 
   kemal-basic-auth:
     github: kemalcr/kemal-basic-auth
     version: 0.2.0
 
   kemal-csrf:
-    github: kemalcr/kemal-csrf
-    version: 0.5.0
+    github: exploitd/kemal-csrf
+    commit: eb713687cdb027f13a263cb58df51cf8fc0f9fab
 
   kemal-flash:
     github: neovintage/kemal-flash
@@ -38,7 +38,7 @@ shards:
 
   kemal-session:
     github: kemalcr/kemal-session
-    version: 0.10.0
+    version: 0.11.0
 
   kilt:
     github: jeromegn/kilt
@@ -54,5 +54,5 @@ shards:
 
   radix:
     github: luislavena/radix
-    version: 0.3.8
+    version: 0.3.9
 
